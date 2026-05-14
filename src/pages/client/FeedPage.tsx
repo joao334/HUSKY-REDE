@@ -51,6 +51,8 @@ export function FeedPage() {
       setPostMediaUrl(null);
       await posts.reload();
       toast.success('Post publicado ✨', 'Sua matilha já pode curtir, comentar e repostar.');
+    } catch (error) {
+      toast.error('Nao deu para publicar', error instanceof Error ? error.message : undefined);
     } finally {
       setPosting(false);
     }
@@ -74,6 +76,8 @@ export function FeedPage() {
       setStoryOpen(false);
       await stories.reload();
       toast.success('Story no ar 📸', 'Ele fica disponível por 24 horas.');
+    } catch (error) {
+      toast.error('Nao deu para publicar o story', error instanceof Error ? error.message : undefined);
     } finally {
       setStoryPosting(false);
     }

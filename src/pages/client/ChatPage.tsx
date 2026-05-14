@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { useAsync } from '../../hooks/useAsync';
 import { useRealtimeRefresh } from '../../hooks/useRealtimeRefresh';
 import { dataService } from '../../services/dataService';
@@ -19,7 +20,9 @@ export function ChatPage() {
   const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [message, setMessage] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const toast = useToast();
 
   const messages = useAsync<ChatMessage[]>(async () => {
     if (!profile) return [];
@@ -47,8 +50,16 @@ export function ChatPage() {
 
   async function upload(file?: File) {
     if (!file) return;
-    const url = await dataService.uploadMedia(file, 'chat');
-    setImageUrl(url);
+    setUploading(true);
+    try {
+      const url = await dataService.uploadMedia(file, 'chat');
+      setImageUrl(url);
+      toast.success('Imagem anexada', 'Agora e so enviar a mensagem.');
+    } catch (error) {
+      toast.error('Nao deu para anexar', error instanceof Error ? error.message : undefined);
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function sendSticker(sticker: (typeof huskyBrand.chatStickers)[number]) {
@@ -116,8 +127,18 @@ export function ChatPage() {
           </div>
         </div>
         <form className="flex gap-2 border-t border-husky-blue/10 p-4 dark:border-white/10" onSubmit={send}>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => upload(event.target.files?.[0])} />
-          <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={uploading}
+            onChange={(event) => {
+              upload(event.target.files?.[0]).catch(() => undefined);
+              event.currentTarget.value = '';
+            }}
+          />
+          <Button type="button" variant="outline" size="icon" isLoading={uploading} onClick={() => fileInputRef.current?.click()}>
             <ImagePlus className="h-5 w-5" />
           </Button>
           <Input value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Mensagem para a Husky..." />

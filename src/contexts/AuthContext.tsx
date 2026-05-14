@@ -19,6 +19,17 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function withAuthTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  }) as Promise<T>;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -68,11 +79,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await withAuthTimeout(
+          supabase.auth.getSession(),
+          15_000,
+          'A sessao demorou demais para carregar. Confira a conexao com o Supabase.',
+        );
         if (error) throw error;
         if (data.session && mounted) {
           setSession(data.session);
-          await loadProfile(data.session.user);
+          await withAuthTimeout(
+            loadProfile(data.session.user),
+            15_000,
+            'O perfil demorou demais para carregar. Confira a tabela users_profiles.',
+          );
         }
       } catch (error) {
         toast.error('Ops! A Husky tropeçou em algum ingrediente.', normalizeError(error));

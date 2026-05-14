@@ -1,5 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 
+function withAsyncTimeout<T>(promise: Promise<T>, timeoutMs = 25_000): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(
+      () => reject(new Error('A Husky demorou demais para carregar. Atualize a tela ou confira a conexao com o Supabase.')),
+      timeoutMs,
+    );
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  }) as Promise<T>;
+}
+
 export function useAsync<T>(factory: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -9,7 +23,7 @@ export function useAsync<T>(factory: () => Promise<T>, deps: unknown[] = []) {
     setLoading(true);
     setError(null);
     try {
-      const result = await factory();
+      const result = await withAsyncTimeout(factory());
       setData(result);
       return result;
     } catch (err) {

@@ -36,10 +36,11 @@ export function MediaUploader({
     try {
       const url = await dataService.uploadMedia(file, folder);
       onChange(url, file);
-      toast.success('Imagem enviada', 'O arquivo entrou no pote certo.');
+      toast.success('Midia enviada', 'O arquivo entrou no pote certo.');
     } catch (error) {
       toast.error('Não deu para enviar', error instanceof Error ? error.message : undefined);
     } finally {
+      event.target.value = '';
       setLoading(false);
     }
   }
@@ -54,8 +55,8 @@ export function MediaUploader({
         )
       ) : null}
       <label>
-        <input className="sr-only" type="file" accept={accept} onChange={handleFile} />
-        <span className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-husky-blue/25 bg-white/60 px-4 text-sm font-semibold text-husky-blue transition hover:bg-husky-blue/10 dark:bg-white/5 dark:text-husky-cream">
+        <input className="sr-only" type="file" accept={accept} onChange={handleFile} disabled={loading} />
+        <span className={`inline-flex h-11 items-center justify-center gap-2 rounded-full border border-husky-blue/25 bg-white/60 px-4 text-sm font-semibold text-husky-blue transition hover:bg-husky-blue/10 dark:bg-white/5 dark:text-husky-cream ${loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
           <ImagePlus className="h-4 w-4" />
           {loading ? 'Enviando...' : label}
         </span>

@@ -118,6 +118,52 @@ function makeId(prefix = 'id') {
     : `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+const mediaUploadLimits = {
+  image: 12 * 1024 * 1024,
+  video: 80 * 1024 * 1024,
+  timeoutMs: 60_000,
+};
+
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  }) as Promise<T>;
+}
+
+function assertMediaFile(file: File) {
+  const isImage = file.type.startsWith('image/');
+  const isVideo = file.type.startsWith('video/');
+  if (!isImage && !isVideo) {
+    throw new Error('Envie uma imagem ou video para a Husky publicar.');
+  }
+
+  const limit = isVideo ? mediaUploadLimits.video : mediaUploadLimits.image;
+  if (file.size > limit) {
+    const limitMb = Math.round(limit / 1024 / 1024);
+    throw new Error(`Arquivo grande demais. O limite atual e de ${limitMb}MB para ${isVideo ? 'videos' : 'imagens'}.`);
+  }
+}
+
+function friendlyUploadError(error: unknown) {
+  const message = normalizeError(error);
+  const lower = message.toLowerCase();
+
+  if (lower.includes('bucket') || lower.includes('not found')) {
+    return 'O bucket husky-media nao existe ou nao esta publico. Crie/libere o Storage no Supabase e rode o arquivo RUN_THIS_ONLY_IF_TABLES_ALREADY_EXIST.sql.';
+  }
+
+  if (lower.includes('row-level') || lower.includes('policy') || lower.includes('unauthorized') || lower.includes('permission')) {
+    return 'Sem permissao para enviar midia. Confira as policies do Storage husky-media no Supabase.';
+  }
+
+  return message;
+}
+
 function ensureDemoSeedVersion() {
   if (typeof localStorage === 'undefined') return;
   const versionKey = 'husky-demo-version';
@@ -193,18 +239,25 @@ export const dataService = {
   },
 
   async uploadMedia(file: File, folder = 'uploads') {
+    assertMediaFile(file);
+
     if (!isSupabaseConfigured) {
       return URL.createObjectURL(file);
     }
 
     const client = getSupabase();
-    const extension = file.name.split('.').pop() || 'png';
+    const extension = file.name.split('.').pop()?.replace(/[^a-z0-9]/gi, '').toLowerCase() || (file.type.startsWith('video/') ? 'mp4' : 'png');
     const path = `${folder}/${makeId('media')}.${extension}`;
-    const { error } = await client.storage.from('husky-media').upload(path, file, {
-      upsert: false,
-      cacheControl: '3600',
-    });
-    if (error) throw new Error(normalizeError(error));
+    const { error } = await withTimeout(
+      client.storage.from('husky-media').upload(path, file, {
+        upsert: false,
+        cacheControl: '3600',
+        contentType: file.type || undefined,
+      }),
+      mediaUploadLimits.timeoutMs,
+      'O envio demorou demais. Verifique sua internet e o bucket husky-media no Supabase.',
+    );
+    if (error) throw new Error(friendlyUploadError(error));
     const { data } = client.storage.from('husky-media').getPublicUrl(path);
     return data.publicUrl;
   },
