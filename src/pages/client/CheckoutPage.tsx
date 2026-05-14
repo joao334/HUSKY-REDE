@@ -91,7 +91,7 @@ export function CheckoutPage() {
             <div className="flex justify-between text-lg font-black"><span>Total</span><span>{formatCurrency(form.delivery_type === 'Entrega' ? total : total - deliveryFee)}</span></div>
           </div>
           <Button className="mt-5 w-full" size="lg" type="submit" isLoading={loading}>
-            Finalizar pedido
+            Finalizar pedido 🐾
           </Button>
         </Card>
       </form>

@@ -3,7 +3,6 @@ import { BrandMark } from '../../components/BrandMark';
 import { GoogleSignInButton } from '../../components/GoogleSignInButton';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
-import { isSupabaseConfigured } from '../../services/supabase';
 
 function cleanRedirect(path?: string) {
   if (!path) return '/app/feed';
@@ -29,12 +28,6 @@ export function LoginPage() {
         <div className="mt-6">
           <GoogleSignInButton isLoading={loading} onClick={() => loginWithGoogle(from)} />
         </div>
-
-        {!isSupabaseConfigured ? (
-          <p className="mt-4 rounded-brand bg-husky-beige/35 p-3 text-xs font-semibold text-husky-brown dark:bg-white/8 dark:text-husky-cream/75">
-            Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e Google Auth no Supabase para liberar o acesso.
-          </p>
-        ) : null}
 
         <Link to="/" className="mt-5 inline-block text-sm font-bold text-husky-blue">
           Voltar

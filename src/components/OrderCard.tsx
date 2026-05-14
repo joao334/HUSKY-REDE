@@ -33,17 +33,17 @@ export function OrderCard({ order, onReorder, onReview, onDetails }: OrderCardPr
       <div className="mt-4 flex flex-wrap gap-2">
         {onDetails ? (
           <Button variant="outline" leftIcon={<ClipboardList className="h-4 w-4" />} onClick={() => onDetails(order)}>
-            Ver detalhes
+            Ver detalhes 🧾
           </Button>
         ) : null}
         {onReorder ? (
           <Button variant="cream" leftIcon={<RotateCcw className="h-4 w-4" />} onClick={() => onReorder(order)}>
-            Pedir novamente
+            Pedir novamente 🔁
           </Button>
         ) : null}
         {order.status === 'Finalizado' && onReview ? (
           <Button leftIcon={<Star className="h-4 w-4" />} onClick={() => onReview(order)}>
-            Avaliar pedido
+            Avaliar pedido ⭐
           </Button>
         ) : null}
       </div>

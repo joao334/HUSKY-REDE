@@ -30,7 +30,7 @@ export function LandingPage() {
             <Button variant="outline">Entrar com Google</Button>
           </Link>
           <Link to="/cadastro" className="hidden sm:block">
-            <Button>Criar conta</Button>
+            <Button>Criar conta 💙</Button>
           </Link>
         </div>
       </header>
@@ -54,7 +54,7 @@ export function LandingPage() {
             </Link>
             <Link to="/cadastro">
               <Button size="lg" variant="cream">
-                Criar conta
+                Criar conta 💙
               </Button>
             </Link>
           </div>
@@ -102,7 +102,7 @@ export function LandingPage() {
             <h2 className="mt-1 text-3xl font-black">Potinhos que a matilha ama</h2>
           </div>
           <Link to="/login">
-            <Button variant="outline">Ver no app</Button>
+            <Button variant="outline">Ver no app 🍰</Button>
           </Link>
         </div>
         {loading ? (

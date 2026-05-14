@@ -11,7 +11,7 @@ function GoogleLogo() {
 export function GoogleSignInButton({
   isLoading,
   onClick,
-  label = 'Entrar com Google',
+  label = 'Entrar com Google 💙',
 }: {
   isLoading?: boolean;
   onClick: () => void;

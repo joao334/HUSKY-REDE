@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   Boxes,
   ClipboardList,
   Cog,
@@ -10,9 +9,9 @@ import {
   Package,
   Percent,
   PieChart,
-  ReceiptText,
   Star,
   Store,
+  UserRound,
   UsersRound,
   Vote,
   Images,
@@ -24,6 +23,7 @@ import { huskyBrand } from '../config/huskyBrand';
 
 const items = [
   { to: '/admin', label: 'Dashboard', icon: Home, emoji: huskyBrand.adminEmojis.dashboard },
+  { to: '/admin/perfil', label: 'Perfil admin', icon: UserRound, emoji: '💙' },
   { to: '/admin/pedidos', label: 'Pedidos', icon: ClipboardList, emoji: huskyBrand.adminEmojis.orders },
   { to: '/admin/produtos', label: 'Produtos', icon: Store, emoji: huskyBrand.adminEmojis.products },
   { to: '/admin/posts', label: 'Posts', icon: MessageSquareText, emoji: huskyBrand.adminEmojis.channels },

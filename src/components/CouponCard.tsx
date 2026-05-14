@@ -46,7 +46,7 @@ export function CouponCard({ coupon }: { coupon: Coupon }) {
           <Button variant="outline" leftIcon={<Copy className="h-4 w-4" />} onClick={copyCoupon}>
             Copiar cupom
           </Button>
-          <Button leftIcon={<ShoppingBag className="h-4 w-4" />} onClick={() => navigate('/app/cardapio')}>
+          <Button leftIcon={<ShoppingBag className="h-4 w-4" />} onClick={() => navigate('/app/loja')}>
             Usar agora 🍰
           </Button>
         </div>

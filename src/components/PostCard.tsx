@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { MessageCircle, PawPrint, Send, Share2, ShoppingBag, Bookmark } from 'lucide-react';
+import { Bookmark, MessageCircle, PawPrint, Repeat2, Send, Share2, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Post, PostComment } from '../types/domain';
 import { dataService } from '../services/dataService';
@@ -14,6 +14,7 @@ import { Card } from './ui/Card';
 import { Textarea } from './ui/Textarea';
 import { EmptyState } from './ui/EmptyState';
 import { huskyBrand } from '../config/huskyBrand';
+import { SocialMedia } from './SocialMedia';
 
 export function PostCard({ post, onChange }: { post: Post; onChange?: () => void }) {
   const { profile } = useAuth();
@@ -26,8 +27,22 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
 
   async function handlePaw() {
     if (!profile) return;
-    await dataService.togglePostLike(post.id, profile.id);
-    toast.success('Patinha enviada', 'A Husky sentiu o carinho.');
+    const liked = await dataService.togglePostLike(post.id, profile.id);
+    toast.success(liked ? 'Patinha enviada 🐾' : 'Patinha removida', liked ? 'A matilha sentiu o carinho.' : undefined);
+    onChange?.();
+  }
+
+  async function handleSave() {
+    if (!profile) return;
+    const saved = await dataService.togglePostSave(post.id, profile.id);
+    toast.success(saved ? 'Post salvo 💙' : 'Post removido dos salvos', saved ? 'Guardado no pote.' : undefined);
+    onChange?.();
+  }
+
+  async function handleRepost() {
+    if (!profile) return;
+    const reposted = await dataService.togglePostRepost(post.id, profile.id);
+    toast.success(reposted ? 'Republicado 🔁' : 'Repost removido', reposted ? 'Esse post foi para sua matilha.' : undefined);
     onChange?.();
   }
 
@@ -49,7 +64,7 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
     const created = await dataService.addPostComment(post.id, profile.id, comment.trim());
     setComments((current) => [...current, { ...created, profile }]);
     setComment('');
-    toast.success('Comentário publicado', 'Você ganhou patinhas pela participação.');
+    toast.success('Comentário publicado 💬', 'Você ganhou patinhas pela participação.');
     onChange?.();
   }
 
@@ -63,31 +78,37 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
     }
   }
 
+  const authorName = post.profile?.name ?? (post.created_by ? 'Cliente da Matilha' : 'Husky Confeiteiro');
+  const authorAvatar = post.profile?.avatar_url ?? (post.created_by ? null : huskyBrand.assets.mascot);
+
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center gap-3 p-4">
-        <Avatar src={huskyBrand.assets.mascot} name="Husky Confeiteiro" />
+        <Avatar src={authorAvatar} name={authorName} />
         <div className="min-w-0 flex-1">
-          <p className="font-black text-husky-cocoa dark:text-husky-cream">Husky Confeiteiro</p>
+          <p className="font-black text-husky-cocoa dark:text-husky-cream">{authorName}</p>
           <p className="text-xs font-semibold text-husky-brown/60 dark:text-husky-cream/60">{formatDate(post.created_at)} · {post.type}</p>
         </div>
         <Badge tone="cream">{post.type}</Badge>
       </div>
-      {post.media_url ? <img src={post.media_url} alt={post.title} className="max-h-[560px] w-full object-cover" /> : null}
+      <SocialMedia url={post.media_url} mediaType={post.media_type} alt={post.title} />
       <div className="p-4">
         <h3 className="text-xl font-black text-husky-cocoa dark:text-husky-cream">{post.title}</h3>
         <p className="mt-2 whitespace-pre-line text-sm leading-6 text-husky-brown/78 dark:text-husky-cream/72">{post.content}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button variant="ghost" leftIcon={<PawPrint className="h-5 w-5" />} onClick={handlePaw}>
-            Dar patinha 🐾
+          <Button variant={post.is_liked ? 'cream' : 'ghost'} leftIcon={<PawPrint className="h-5 w-5" />} onClick={handlePaw}>
+            Curtir 🐾
           </Button>
           <Button variant="ghost" leftIcon={<MessageCircle className="h-5 w-5" />} onClick={openComments}>
             Comentar 💬
           </Button>
+          <Button variant={post.is_reposted ? 'cream' : 'ghost'} leftIcon={<Repeat2 className="h-5 w-5" />} onClick={handleRepost}>
+            Repostar 🔁
+          </Button>
           <Button variant="ghost" leftIcon={<Share2 className="h-5 w-5" />} onClick={sharePost}>
             Compartilhar ✨
           </Button>
-          <Button variant="ghost" leftIcon={<Bookmark className="h-5 w-5" />} onClick={() => toast.success('Post salvo', 'Guardado no pote.')}>
+          <Button variant={post.is_saved ? 'cream' : 'ghost'} leftIcon={<Bookmark className="h-5 w-5" />} onClick={handleSave}>
             Salvar 💙
           </Button>
           {post.product ? (
@@ -99,6 +120,8 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
         <div className="mt-3 flex gap-4 text-sm font-semibold text-husky-brown/65 dark:text-husky-cream/65">
           <span>{post.likes_count ?? 0} patinhas</span>
           <span>{post.comments_count ?? 0} comentários</span>
+          <span>{post.reposts_count ?? 0} reposts</span>
+          <span>{post.saves_count ?? 0} salvos</span>
         </div>
         {commentsOpen ? (
           <div className="mt-4 border-t border-husky-blue/10 pt-4 dark:border-white/10">
@@ -122,7 +145,7 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
             <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={handleComment}>
               <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Escreva um uivo rápido..." className="min-h-12 sm:min-h-12" />
               <Button type="submit" size="lg" leftIcon={<Send className="h-4 w-4" />}>
-                Enviar
+                Enviar 💬
               </Button>
             </form>
           </div>

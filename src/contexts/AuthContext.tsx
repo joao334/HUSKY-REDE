@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       try {
         if (!isSupabaseConfigured || !supabase) {
-          throw new Error('Configure o Supabase e ative o provedor Google Auth para liberar o acesso.');
+          throw new Error('Login Google ainda não está disponível neste ambiente.');
         }
         const target = redirectPath.startsWith('/') ? redirectPath : '/app/feed';
         const { error } = await supabase.auth.signInWithOAuth({

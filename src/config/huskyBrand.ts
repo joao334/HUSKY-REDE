@@ -83,4 +83,4 @@ export const huskyBrand = {
   },
 };
 
-export const demoStorageVersion = 'husky-reference-assets-2026-05-13-v2';
+export const demoStorageVersion = 'husky-social-feed-2026-05-14-v1';

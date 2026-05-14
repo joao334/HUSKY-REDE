@@ -62,6 +62,9 @@ const demoTables: Record<string, unknown[]> = {
   expenses: demoExpenses,
   polls: demoPolls,
   users_profiles: [demoProfile, demoAdminProfile],
+  post_likes: [],
+  post_saves: [],
+  post_reposts: [],
   post_comments: [],
   reviews: demoReviews,
   notifications: demoNotifications,
@@ -287,7 +290,29 @@ export const dataService = {
   },
 
   async getPosts(userId?: string) {
-    if (!isSupabaseConfigured) return readDemo<Post>('posts');
+    if (!isSupabaseConfigured) {
+      const posts = readDemo<Post>('posts');
+      const comments = readDemo<PostComment>('post_comments');
+      const likes = readDemo<AnyRecord>('post_likes');
+      const saves = readDemo<AnyRecord>('post_saves');
+      const reposts = readDemo<AnyRecord>('post_reposts');
+      const profiles = readDemo<Profile>('users_profiles');
+      const profileMap = new Map(profiles.map((item) => [item.id, item]));
+      return posts
+        .filter((post) => post.status === 'published')
+        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+        .map((post) => ({
+          ...post,
+          profile: post.created_by ? profileMap.get(post.created_by) ?? null : null,
+          likes_count: likes.filter((like) => like.post_id === post.id).length || post.likes_count || 0,
+          comments_count: comments.filter((comment) => comment.post_id === post.id && comment.is_visible).length || post.comments_count || 0,
+          saves_count: saves.filter((save) => save.post_id === post.id).length,
+          reposts_count: reposts.filter((repost) => repost.post_id === post.id).length,
+          is_liked: Boolean(userId && likes.some((like) => like.post_id === post.id && like.user_id === userId)),
+          is_saved: Boolean(userId && saves.some((save) => save.post_id === post.id && save.user_id === userId)),
+          is_reposted: Boolean(userId && reposts.some((repost) => repost.post_id === post.id && repost.user_id === userId)),
+        }));
+    }
 
     const { data, error } = await getSupabase()
       .from('posts')
@@ -298,24 +323,101 @@ export const dataService = {
     const ids = posts.map((post) => post.id);
     const counts = await getPostCounts(ids);
 
+    const authorIds = [...new Set(posts.map((post) => post.created_by).filter(Boolean) as string[])];
+    const { data: profiles } = authorIds.length
+      ? await getSupabase().from('users_profiles').select('id,name,avatar_url').in('id', authorIds)
+      : { data: [] };
+    const profileMap = new Map(
+      (profiles ?? []).map((profile: Pick<Profile, 'id' | 'name' | 'avatar_url'>) => [profile.id, profile]),
+    );
+
     let likedIds = new Set<string>();
+    let savedIds = new Set<string>();
+    let repostedIds = new Set<string>();
+    const savesCount = new Map<string, number>();
+    const repostsCount = new Map<string, number>();
     if (userId && ids.length) {
-      const { data: likes, error: likesError } = await getSupabase()
+      const [{ data: likes, error: likesError }, savesResult, repostsResult] = await Promise.all([
+        getSupabase()
         .from('post_likes')
         .select('post_id')
         .eq('user_id', userId)
-        .in('post_id', ids);
+          .in('post_id', ids),
+        getSupabase().from('post_saves').select('post_id').eq('user_id', userId).in('post_id', ids),
+        getSupabase().from('post_reposts').select('post_id').eq('user_id', userId).in('post_id', ids),
+      ]);
       if (likesError) throw new Error(normalizeError(likesError));
       likedIds = new Set((likes ?? []).map((like: { post_id: string }) => like.post_id));
+      if (!savesResult.error) savedIds = new Set((savesResult.data ?? []).map((save: { post_id: string }) => save.post_id));
+      if (!repostsResult.error) {
+        repostedIds = new Set((repostsResult.data ?? []).map((repost: { post_id: string }) => repost.post_id));
+      }
+    }
+
+    if (ids.length) {
+      const [savesResult, repostsResult] = await Promise.all([
+        getSupabase().from('post_saves').select('post_id').in('post_id', ids),
+        getSupabase().from('post_reposts').select('post_id').in('post_id', ids),
+      ]);
+      if (!savesResult.error) {
+        (savesResult.data ?? []).forEach((save: { post_id: string }) =>
+          savesCount.set(save.post_id, (savesCount.get(save.post_id) ?? 0) + 1),
+        );
+      }
+      if (!repostsResult.error) {
+        (repostsResult.data ?? []).forEach((repost: { post_id: string }) =>
+          repostsCount.set(repost.post_id, (repostsCount.get(repost.post_id) ?? 0) + 1),
+        );
+      }
     }
 
     return posts.map((post) => ({
       ...post,
       product: post.product ? normalizeProduct(post.product) : null,
+      profile: post.created_by ? profileMap.get(post.created_by) ?? null : null,
       likes_count: counts.likes.get(post.id) ?? 0,
       comments_count: counts.comments.get(post.id) ?? 0,
+      saves_count: savesCount.get(post.id) ?? 0,
+      reposts_count: repostsCount.get(post.id) ?? 0,
       is_liked: likedIds.has(post.id),
+      is_saved: savedIds.has(post.id),
+      is_reposted: repostedIds.has(post.id),
     }));
+  },
+
+  async createUserPost(input: {
+    userId: string;
+    title?: string;
+    content: string;
+    mediaUrl?: string | null;
+    mediaType?: 'image' | 'video';
+  }) {
+    const payload = {
+      id: makeId('post'),
+      title: input.title?.trim() || 'Post da Matilha',
+      content: input.content.trim(),
+      type: 'Post da Matilha',
+      media_url: input.mediaUrl || null,
+      media_type: input.mediaType ?? 'image',
+      product_id: null,
+      coupon_id: null,
+      poll_id: null,
+      status: 'published',
+      created_by: input.userId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } satisfies Partial<Post> & AnyRecord;
+
+    if (!payload.content && !payload.media_url) throw new Error('Escreva algo ou envie uma foto/vídeo para postar.');
+
+    if (!isSupabaseConfigured) {
+      const rows = readDemo<Post>('posts');
+      writeDemo('posts', [payload as Post, ...rows]);
+      return payload as Post;
+    }
+
+    const { data, error } = await getSupabase().from('posts').insert(payload).select('*').single();
+    return assertData<Post>(data as Post | null, error);
   },
 
   async getPostComments(postId: string) {
@@ -361,7 +463,16 @@ export const dataService = {
   },
 
   async togglePostLike(postId: string, userId: string) {
-    if (!isSupabaseConfigured) return true;
+    if (!isSupabaseConfigured) {
+      const rows = readDemo<AnyRecord>('post_likes');
+      const existing = rows.find((row) => row.post_id === postId && row.user_id === userId);
+      if (existing) {
+        writeDemo('post_likes', rows.filter((row) => row.id !== existing.id));
+        return false;
+      }
+      writeDemo('post_likes', [{ id: makeId('like'), post_id: postId, user_id: userId, created_at: new Date().toISOString() }, ...rows]);
+      return true;
+    }
     const client = getSupabase();
     const { data: existing, error } = await client
       .from('post_likes')
@@ -376,6 +487,64 @@ export const dataService = {
       return false;
     }
     const { error: insertError } = await client.from('post_likes').insert({ post_id: postId, user_id: userId });
+    if (insertError) throw new Error(normalizeError(insertError));
+    return true;
+  },
+
+  async togglePostSave(postId: string, userId: string) {
+    if (!isSupabaseConfigured) {
+      const rows = readDemo<AnyRecord>('post_saves');
+      const existing = rows.find((row) => row.post_id === postId && row.user_id === userId);
+      if (existing) {
+        writeDemo('post_saves', rows.filter((row) => row.id !== existing.id));
+        return false;
+      }
+      writeDemo('post_saves', [{ id: makeId('save'), post_id: postId, user_id: userId, created_at: new Date().toISOString() }, ...rows]);
+      return true;
+    }
+    const client = getSupabase();
+    const { data: existing, error } = await client
+      .from('post_saves')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw new Error(normalizeError(error));
+    if (existing) {
+      const { error: deleteError } = await client.from('post_saves').delete().eq('id', existing.id);
+      if (deleteError) throw new Error(normalizeError(deleteError));
+      return false;
+    }
+    const { error: insertError } = await client.from('post_saves').insert({ post_id: postId, user_id: userId });
+    if (insertError) throw new Error(normalizeError(insertError));
+    return true;
+  },
+
+  async togglePostRepost(postId: string, userId: string) {
+    if (!isSupabaseConfigured) {
+      const rows = readDemo<AnyRecord>('post_reposts');
+      const existing = rows.find((row) => row.post_id === postId && row.user_id === userId);
+      if (existing) {
+        writeDemo('post_reposts', rows.filter((row) => row.id !== existing.id));
+        return false;
+      }
+      writeDemo('post_reposts', [{ id: makeId('repost'), post_id: postId, user_id: userId, created_at: new Date().toISOString() }, ...rows]);
+      return true;
+    }
+    const client = getSupabase();
+    const { data: existing, error } = await client
+      .from('post_reposts')
+      .select('id')
+      .eq('post_id', postId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw new Error(normalizeError(error));
+    if (existing) {
+      const { error: deleteError } = await client.from('post_reposts').delete().eq('id', existing.id);
+      if (deleteError) throw new Error(normalizeError(deleteError));
+      return false;
+    }
+    const { error: insertError } = await client.from('post_reposts').insert({ post_id: postId, user_id: userId });
     if (insertError) throw new Error(normalizeError(insertError));
     return true;
   },
@@ -458,7 +627,22 @@ export const dataService = {
   },
 
   async getStories() {
-    if (!isSupabaseConfigured) return readDemo<Story>('stories');
+    if (!isSupabaseConfigured) {
+      const profiles = readDemo<Profile>('users_profiles');
+      const profileMap = new Map(profiles.map((item) => [item.id, item]));
+      const nowMs = Date.now();
+      return readDemo<Story>('stories')
+        .filter((story) => {
+          const starts = story.starts_at ? Date.parse(story.starts_at) : 0;
+          const ends = story.ends_at ? Date.parse(story.ends_at) : Number.POSITIVE_INFINITY;
+          return story.is_active && starts <= nowMs && ends >= nowMs;
+        })
+        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+        .map((story) => ({
+          ...story,
+          profile: story.created_by ? profileMap.get(story.created_by) ?? null : null,
+        }));
+    }
     const now = new Date().toISOString();
     const { data, error } = await getSupabase()
       .from('stories')
@@ -467,7 +651,54 @@ export const dataService = {
       .lte('starts_at', now)
       .gte('ends_at', now)
       .order('created_at', { ascending: false });
-    return assertData<Story[]>(data as Story[] | null, error);
+    const stories = assertData<Story[]>(data as Story[] | null, error);
+    const authorIds = [...new Set(stories.map((story) => story.created_by).filter(Boolean) as string[])];
+    const { data: profiles } = authorIds.length
+      ? await getSupabase().from('users_profiles').select('id,name,avatar_url').in('id', authorIds)
+      : { data: [] };
+    const profileMap = new Map(
+      (profiles ?? []).map((profile: Pick<Profile, 'id' | 'name' | 'avatar_url'>) => [profile.id, profile]),
+    );
+    return stories.map((story) => ({
+      ...story,
+      profile: story.created_by ? profileMap.get(story.created_by) ?? null : null,
+    }));
+  },
+
+  async createUserStory(input: {
+    userId: string;
+    title: string;
+    content?: string;
+    mediaUrl: string;
+    mediaType?: 'image' | 'video';
+  }) {
+    if (!input.mediaUrl) throw new Error('Envie uma foto ou vídeo para publicar no story.');
+    const now = new Date();
+    const payload = {
+      id: makeId('story'),
+      title: input.title.trim() || 'Story da Matilha',
+      content: input.content?.trim() || null,
+      media_url: input.mediaUrl,
+      media_type: input.mediaType ?? 'image',
+      button_text: null,
+      button_link: null,
+      product_id: null,
+      coupon_id: null,
+      created_by: input.userId,
+      starts_at: now.toISOString(),
+      ends_at: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+      is_active: true,
+      created_at: now.toISOString(),
+    } satisfies Partial<Story> & AnyRecord;
+
+    if (!isSupabaseConfigured) {
+      const rows = readDemo<Story>('stories');
+      writeDemo('stories', [payload as Story, ...rows]);
+      return payload as Story;
+    }
+
+    const { data, error } = await getSupabase().from('stories').insert(payload).select('*').single();
+    return assertData<Story>(data as Story | null, error);
   },
 
   async getCoupons() {

@@ -9,13 +9,17 @@ type ThemeContextValue = {
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
+const themeStorageKey = 'husky-theme-v2';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('husky-theme') as Theme | null) ?? 'light');
+  const [theme, setThemeState] = useState<Theme>(() => {
+    const stored = localStorage.getItem(themeStorageKey) as Theme | null;
+    return stored === 'light' || stored === 'dark' ? stored : 'dark';
+  });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('husky-theme', theme);
+    localStorage.setItem(themeStorageKey, theme);
   }, [theme]);
 
   const value = useMemo<ThemeContextValue>(

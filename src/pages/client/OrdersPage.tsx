@@ -69,7 +69,7 @@ export function OrdersPage() {
           </Select>
           <Textarea label="Comentário" value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Conte como foi o pedido..." />
           <Button onClick={submitReview} leftIcon={<Star className="h-4 w-4" />}>
-            Enviar avaliação
+            Enviar avaliação ⭐
           </Button>
         </div>
       </Modal>

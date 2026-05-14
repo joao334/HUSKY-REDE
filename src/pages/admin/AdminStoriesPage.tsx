@@ -11,7 +11,8 @@ export function AdminStoriesPage() {
       fields={[
         { name: 'title', label: 'Título' },
         { name: 'content', label: 'Texto curto', type: 'textarea' },
-        { name: 'media_url', label: 'Imagem', type: 'media' },
+        { name: 'media_url', label: 'Imagem/vídeo', type: 'media' },
+        { name: 'media_type', label: 'Tipo da mídia', type: 'select', options: ['image', 'video'] },
         { name: 'button_text', label: 'Botão opcional' },
         { name: 'button_link', label: 'Link do botão' },
         { name: 'product_id', label: 'Produto vinculado' },

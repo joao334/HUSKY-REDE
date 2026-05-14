@@ -4,7 +4,7 @@ import { cn } from '../utils/cn';
 
 const items = [
   { to: '/app/feed', label: 'Feed', icon: Home, emoji: '✨' },
-  { to: '/app/cardapio', label: 'Cardápio', icon: Utensils, emoji: '🍰' },
+  { to: '/app/loja', label: 'Loja', icon: Utensils, emoji: '🍰' },
   { to: '/app/pedidos', label: 'Pedidos', icon: ClipboardList, emoji: '🧾' },
   { to: '/app/matilha', label: 'Matilha', icon: Trophy, emoji: '🏆' },
   { to: '/app/perfil', label: 'Perfil', icon: UserRound, emoji: '💙' },

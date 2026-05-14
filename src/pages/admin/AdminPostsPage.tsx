@@ -18,6 +18,7 @@ export function AdminPostsPage() {
           options: ['Produto', 'Promoção', 'Bastidores', 'Feedback', 'Enquete', 'Novidade', 'Comunicado', 'Lançamento'],
         },
         { name: 'media_url', label: 'Imagem/vídeo', type: 'media' },
+        { name: 'media_type', label: 'Tipo da mídia', type: 'select', options: ['image', 'video'] },
         { name: 'product_id', label: 'Produto vinculado opcional' },
         { name: 'coupon_id', label: 'Cupom vinculado opcional' },
         { name: 'poll_id', label: 'Enquete vinculada opcional' },

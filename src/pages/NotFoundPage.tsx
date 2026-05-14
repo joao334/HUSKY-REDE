@@ -11,7 +11,7 @@ export function NotFoundPage() {
         <h1 className="mt-5 text-3xl font-black">Essa trilha sumiu da matilha</h1>
         <p className="mt-2 text-sm text-husky-brown/70 dark:text-husky-cream/70">A página não foi encontrada, mas o cardápio continua quentinho.</p>
         <Link to="/app/feed" className="mt-5 inline-block">
-          <Button>Voltar ao feed</Button>
+          <Button>Voltar ao feed ✨</Button>
         </Link>
       </Card>
     </main>

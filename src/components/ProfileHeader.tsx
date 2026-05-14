@@ -6,21 +6,35 @@ import { Avatar } from './ui/Avatar';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
+import { MediaUploader } from './ui/MediaUploader';
 
 type ProfileHeaderProps = {
   profile: Profile;
   ordersCount?: number;
   onEdit?: () => void;
+  onAvatarChange?: (url: string) => void;
 };
 
-export function ProfileHeader({ profile, ordersCount = 0, onEdit }: ProfileHeaderProps) {
+export function ProfileHeader({ profile, ordersCount = 0, onEdit, onAvatarChange }: ProfileHeaderProps) {
   return (
     <Card className="overflow-hidden">
       <div className="h-28 bg-gradient-to-r from-husky-blue via-husky-sky to-husky-beige" />
       <div className="-mt-12 p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-end gap-4">
-            <Avatar src={profile.avatar_url} name={profile.name} size="xl" />
+            <div className="flex flex-col items-center gap-2">
+              <Avatar src={profile.avatar_url} name={profile.name} size="xl" />
+              {onAvatarChange ? (
+                <MediaUploader
+                  value={profile.avatar_url}
+                  folder="avatars"
+                  label="Trocar foto 📸"
+                  accept="image/*"
+                  showPreview={false}
+                  onChange={onAvatarChange}
+                />
+              ) : null}
+            </div>
             <div className="pb-1">
               <h2 className="text-2xl font-black text-husky-cocoa dark:text-husky-cream">{profile.name}</h2>
               <p className="text-sm text-husky-brown/70 dark:text-husky-cream/70">{profile.bio || 'Um perfil doce da matilha.'}</p>
@@ -28,7 +42,7 @@ export function ProfileHeader({ profile, ordersCount = 0, onEdit }: ProfileHeade
           </div>
           {onEdit ? (
             <Button variant="outline" onClick={onEdit}>
-              Editar perfil
+              Editar perfil ✏️
             </Button>
           ) : null}
         </div>

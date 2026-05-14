@@ -37,9 +37,9 @@ export function MenuPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Cardápio"
-        title="Escolha seu potinho"
-        description="Bolos de pote, brownies e achadinhos doces para montar o pedido da matilha."
+        eyebrow="Loja"
+        title="Loja da Husky"
+        description="Todos os potinhos, brownies, combos e bebidas ficam aqui."
       />
       <div className="mb-4 grid gap-3 md:grid-cols-[1fr_auto]">
         <Input placeholder="Buscar delícias..." value={search} onChange={(event) => setSearch(event.target.value)} leftIcon={<Search className="h-4 w-4" />} />

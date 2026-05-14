@@ -2,7 +2,6 @@ import { FormEvent, ReactNode, useMemo, useState } from 'react';
 import { Edit3, Plus, Trash2 } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
 import { DataTable, DataTableColumn } from '../../components/ui/DataTable';
 import { Input } from '../../components/ui/Input';
 import { MediaUploader } from '../../components/ui/MediaUploader';
@@ -206,16 +205,11 @@ export function AdminCrudPage({ table, title, eyebrow, description, fields, colu
           <div className="flex gap-2">
             {extraAction}
             <Button leftIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
-              Novo
+              Novo ✨
             </Button>
           </div>
         }
       />
-      <Card className="mb-4 p-4">
-        <p className="text-sm font-semibold text-husky-brown/70 dark:text-husky-cream/70">
-          {rows.data?.length ?? 0} registros. Tudo com tratamento de erro, estados vazios e pronto para Supabase.
-        </p>
-      </Card>
       <DataTable rows={rows.data ?? []} columns={tableColumns} getRowKey={(row) => String(row.id)} emptyTitle="Nada cadastrado ainda." />
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Editar ${getTitle?.(editing) ?? 'item'}` : `Novo registro`} size="lg">
@@ -223,7 +217,7 @@ export function AdminCrudPage({ table, title, eyebrow, description, fields, colu
           {fields.map((field) => <div key={field.name} className={field.type === 'textarea' || field.type === 'json' || field.type === 'media' ? 'md:col-span-2' : undefined}>{fieldControl(field)}</div>)}
           <div className="md:col-span-2">
             <Button type="submit" isLoading={saving}>
-              Salvar
+              Salvar 💙
             </Button>
           </div>
         </form>

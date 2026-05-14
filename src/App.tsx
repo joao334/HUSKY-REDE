@@ -37,6 +37,7 @@ import { AdminPollsPage } from './pages/admin/AdminPollsPage';
 import { AdminReportsPage } from './pages/admin/AdminReportsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminChatPage } from './pages/admin/AdminChatPage';
+import { AdminProfilePage } from './pages/admin/AdminProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -52,7 +53,8 @@ export default function App() {
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Navigate to="/app/feed" replace />} />
             <Route path="feed" element={<FeedPage />} />
-            <Route path="cardapio" element={<MenuPage />} />
+            <Route path="loja" element={<MenuPage />} />
+            <Route path="cardapio" element={<Navigate to="/app/loja" replace />} />
             <Route path="produtos/:slug" element={<ProductDetailPage />} />
             <Route path="carrinho" element={<CartPage />} />
             <Route path="checkout" element={<CheckoutPage />} />
@@ -86,6 +88,7 @@ export default function App() {
             <Route path="enquetes" element={<AdminPollsPage />} />
             <Route path="relatorios" element={<AdminReportsPage />} />
             <Route path="configuracoes" element={<AdminSettingsPage />} />
+            <Route path="perfil" element={<AdminProfilePage />} />
           </Route>
         </Route>
 

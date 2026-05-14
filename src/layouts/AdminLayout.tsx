@@ -12,6 +12,7 @@ const quickLinks = [
   ['Produtos', '/admin/produtos'],
   ['Relatórios', '/admin/relatorios'],
   ['Configurações', '/admin/configuracoes'],
+  ['Perfil', '/admin/perfil'],
 ];
 
 export function AdminLayout() {
@@ -38,7 +39,9 @@ export function AdminLayout() {
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 </Button>
-                <Avatar src={profile?.avatar_url} name={profile?.name} />
+                <NavLink to="/admin/perfil" title="Perfil admin">
+                  <Avatar src={profile?.avatar_url} name={profile?.name} />
+                </NavLink>
                 <Button variant="ghost" size="icon" onClick={logout}>
                   <LogOut className="h-5 w-5" />
                 </Button>

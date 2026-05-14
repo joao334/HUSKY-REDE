@@ -16,7 +16,7 @@ export function CartPage() {
     <div>
       <PageHeader eyebrow="Carrinho" title="Seu potinho" description="Revise os itens, aplique cupom e finalize o pedido." />
       {!items.length ? (
-        <EmptyState title="Seu potinho ainda está vazio" description="Bora escolher uma delícia?" actionLabel="Ver cardápio" onAction={() => (window.location.href = '/app/cardapio')} icon={<ShoppingBag className="h-8 w-8" />} />
+        <EmptyState title="Seu potinho ainda está vazio" description="Bora escolher uma delícia?" actionLabel="Abrir loja" onAction={() => (window.location.href = '/app/loja')} icon={<ShoppingBag className="h-8 w-8" />} />
       ) : (
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           <div className="space-y-3">
@@ -58,7 +58,7 @@ export function CartPage() {
             <div className="mt-5 flex gap-2">
               <Input placeholder="Cupom" value={couponCode} onChange={(event) => setCouponCode(event.target.value.toUpperCase())} />
               <Button type="button" onClick={() => applyCoupon()}>
-                Aplicar
+                Aplicar 🎟️
               </Button>
             </div>
             {couponMessage ? <p className="mt-2 text-sm font-semibold text-husky-blue">{couponMessage}</p> : null}

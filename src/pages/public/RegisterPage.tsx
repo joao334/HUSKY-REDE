@@ -3,7 +3,6 @@ import { BrandMark } from '../../components/BrandMark';
 import { GoogleSignInButton } from '../../components/GoogleSignInButton';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
-import { isSupabaseConfigured } from '../../services/supabase';
 
 export function RegisterPage() {
   const { loginWithGoogle, loading } = useAuth();
@@ -18,14 +17,8 @@ export function RegisterPage() {
         </p>
 
         <div className="mt-6">
-          <GoogleSignInButton label="Criar conta com Google" isLoading={loading} onClick={() => loginWithGoogle('/app/feed')} />
+          <GoogleSignInButton label="Criar conta com Google 💙" isLoading={loading} onClick={() => loginWithGoogle('/app/feed')} />
         </div>
-
-        {!isSupabaseConfigured ? (
-          <p className="mt-4 rounded-brand bg-husky-beige/35 p-3 text-xs font-semibold text-husky-brown dark:bg-white/8 dark:text-husky-cream/75">
-            O cadastro Google precisa do Supabase configurado.
-          </p>
-        ) : null}
 
         <Link to="/" className="mt-5 inline-block text-sm font-bold text-husky-blue">
           Voltar

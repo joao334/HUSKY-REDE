@@ -7,7 +7,6 @@ import {
   MessageCircle,
   Moon,
   Search,
-  ShieldCheck,
   ShoppingBag,
   Sun,
   Trophy,
@@ -27,7 +26,7 @@ import { cn } from '../utils/cn';
 
 const navItems = [
   { to: '/app/feed', label: 'Feed', icon: Home, emoji: '✨' },
-  { to: '/app/cardapio', label: 'Cardápio', icon: Utensils, emoji: '🍰' },
+  { to: '/app/loja', label: 'Loja', icon: Utensils, emoji: '🍰' },
   { to: '/app/pedidos', label: 'Pedidos', icon: ClipboardList, emoji: '🧾' },
   { to: '/app/matilha', label: 'Clube da Matilha', icon: Trophy, emoji: '🐾' },
   { to: '/app/ranking', label: 'Ranking', icon: Trophy, emoji: '🏆' },
@@ -39,7 +38,7 @@ const navItems = [
 ];
 
 export function AppLayout() {
-  const { profile, logout, isAdmin } = useAuth();
+  const { profile, logout } = useAuth();
   const { items } = useCart();
   const { theme, toggleTheme } = useTheme();
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -71,15 +70,6 @@ export function AppLayout() {
                 </NavLink>
               );
             })}
-            {isAdmin ? (
-              <NavLink
-                to="/admin"
-                className="flex items-center gap-3 rounded-brand px-3 py-2.5 text-sm font-bold text-husky-blue transition hover:bg-husky-blue/10"
-              >
-                <ShieldCheck className="h-5 w-5" />
-                Painel admin
-              </NavLink>
-            ) : null}
           </nav>
         </aside>
 
@@ -97,6 +87,7 @@ export function AppLayout() {
                 <NavLink to="/app/carrinho" className="relative">
                   <Button variant="outline" size="icon">
                     <ShoppingBag className="h-5 w-5" />
+                    Carrinho 🛒
                   </Button>
                   {cartCount ? (
                     <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-husky-brown px-1 text-[11px] font-black text-white">
@@ -107,16 +98,19 @@ export function AppLayout() {
                 <NavLink to="/app/notificacoes">
                   <Button variant="outline" size="icon">
                     <Bell className="h-5 w-5" />
+                    Notificações 🔔
                   </Button>
                 </NavLink>
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  Tema ✨
                 </Button>
                 <NavLink to="/app/perfil" className="hidden sm:block">
                   <Avatar src={profile?.avatar_url} name={profile?.name} />
                 </NavLink>
                 <Button variant="ghost" size="icon" onClick={logout}>
                   <LogOut className="h-5 w-5" />
+                  Sair 👋
                 </Button>
               </div>
             </div>

@@ -68,7 +68,8 @@ export type PostType =
   | 'Enquete'
   | 'Novidade'
   | 'Comunicado'
-  | 'Lançamento';
+  | 'Lançamento'
+  | 'Post da Matilha';
 
 export type Post = {
   id: string;
@@ -76,6 +77,7 @@ export type Post = {
   content: string;
   type: PostType;
   media_url: string | null;
+  media_type?: 'image' | 'video' | null;
   product_id: string | null;
   coupon_id: string | null;
   poll_id: string | null;
@@ -84,9 +86,14 @@ export type Post = {
   created_at: string;
   updated_at: string | null;
   product?: Product | null;
+  profile?: Pick<Profile, 'id' | 'name' | 'avatar_url'> | null;
   likes_count?: number;
   comments_count?: number;
+  reposts_count?: number;
+  saves_count?: number;
   is_liked?: boolean;
+  is_saved?: boolean;
+  is_reposted?: boolean;
 };
 
 export type PostComment = {
@@ -106,10 +113,13 @@ export type Story = {
   title: string;
   content: string | null;
   media_url: string | null;
+  media_type?: 'image' | 'video' | null;
   button_text: string | null;
   button_link: string | null;
   product_id: string | null;
   coupon_id: string | null;
+  created_by?: string | null;
+  profile?: Pick<Profile, 'id' | 'name' | 'avatar_url'> | null;
   starts_at: string | null;
   ends_at: string | null;
   is_active: boolean;
