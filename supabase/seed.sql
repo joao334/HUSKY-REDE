@@ -88,8 +88,8 @@ insert into public.stories (
   starts_at, ends_at, is_active
 )
 values
-('50000000-0000-0000-0000-000000000001','Tem fornada hoje!','Brownies saindo do forno e potinhos fresquinhos.','/assets/husky/post.PNG','Pedir agora','/app/cardapio','10000000-0000-0000-0000-000000000005',null,now() - interval '1 day',now() + interval '3 days',true),
-('50000000-0000-0000-0000-000000000002','Últimas unidades','Pata Crocante está quase sumindo da matilha.','/assets/husky/mascote.png','Ver cardápio','/app/cardapio','10000000-0000-0000-0000-000000000004',null,now() - interval '1 day',now() + interval '3 days',true),
+('50000000-0000-0000-0000-000000000001','Tem fornada hoje!','Brownies saindo do forno e potinhos fresquinhos.','/assets/husky/post.PNG','Pedir agora','/app/loja','10000000-0000-0000-0000-000000000005',null,now() - interval '1 day',now() + interval '3 days',true),
+('50000000-0000-0000-0000-000000000002','Últimas unidades','Pata Crocante está quase sumindo da matilha.','/assets/husky/mascote.png','Ver loja','/app/loja','10000000-0000-0000-0000-000000000004',null,now() - interval '1 day',now() + interval '3 days',true),
 ('50000000-0000-0000-0000-000000000003','Cupom liberado','Use HUSKY10 acima de R$50.','/assets/husky/logo.png','Usar cupom','/app/cupons',null,'30000000-0000-0000-0000-000000000002',now() - interval '1 day',now() + interval '3 days',true)
 on conflict (id) do update set
   title = excluded.title,
