@@ -26,12 +26,13 @@ Sem essas variáveis, o login Google fica bloqueado. O conteúdo público ainda 
 ## Supabase
 
 1. Crie um projeto no Supabase.
-2. Rode as migrations em `supabase/migrations`.
-3. Em Authentication > Providers, ative o Google e preencha Client ID e Client Secret do Google Cloud.
-4. Em Authentication > URL Configuration, adicione as URLs de redirect do app, por exemplo `http://localhost:5173/app/feed`, `http://localhost:5173/admin` e as equivalentes da Vercel.
-5. Rode `supabase/seed.sql` para inserir produtos, posts, stories, cupons, estoque, fichas técnicas e configurações iniciais.
-6. Cada novo login Google cria automaticamente um perfil `customer`.
-7. Para liberar a gestão, promova manualmente apenas o e-mail do administrador:
+2. Se o banco estiver vazio, rode as migrations em `supabase/migrations`.
+3. Se aparecer `relation "users_profiles" already exists`, pare e rode somente `supabase/RUN_THIS_ONLY_IF_TABLES_ALREADY_EXIST.sql`.
+4. Em Authentication > Providers, ative o Google e preencha Client ID e Client Secret do Google Cloud.
+5. Em Authentication > URL Configuration, adicione as URLs de redirect do app, por exemplo `http://localhost:5173/app/feed`, `http://localhost:5173/admin` e as equivalentes da Vercel.
+6. Rode `supabase/seed.sql` para inserir produtos, posts, stories, cupons, estoque, fichas técnicas e configurações iniciais.
+7. Cada novo login Google cria automaticamente um perfil `customer`.
+8. Para liberar a gestão, promova manualmente apenas o e-mail do administrador:
 
 ```sql
 update public.users_profiles
