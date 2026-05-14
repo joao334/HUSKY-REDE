@@ -1,0 +1,10 @@
+[2m21:42:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [33mwarning: [33mDuplicate key "description" in object literal[33m
+311|      code: 'FRETEGRATIS',
+312|      description: 'Frete grátis em pedidos selecionados',
+313|      description: 'Frete grátis acima de R$50.',
+   |      ^
+314|      discount_type: 'free_shipping',
+315|      discount_value: 0,
+[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mC:/Users/yagoh/Documents/Codex/2026-05-13/crie-um-sistema-completo-chamado-husky/src/services/demoData.ts[39m
