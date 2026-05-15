@@ -1,12 +1,10 @@
 import { FormEvent, useMemo, useState } from 'react';
-import { CalendarDays, Gift, Heart, Mail, MapPin, MessageSquareText, Phone, Star } from 'lucide-react';
-import { PageHeader } from '../../components/PageHeader';
+import { Bookmark, Grid3X3, MessageSquareText, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { ProfileHeader } from '../../components/ProfileHeader';
-import { ProductCard } from '../../components/ProductCard';
 import { CouponCard } from '../../components/CouponCard';
 import { SocialMedia } from '../../components/SocialMedia';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Input } from '../../components/ui/Input';
 import { MediaUploader } from '../../components/ui/MediaUploader';
@@ -18,10 +16,13 @@ import { dataService } from '../../services/dataService';
 import type { Profile } from '../../types/domain';
 import { useToast } from '../../contexts/ToastContext';
 
+type ProfileTab = 'posts' | 'saved' | 'reviews';
+
 export function ProfilePage() {
   const { profile, setProfile } = useAuth();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
+  const [tab, setTab] = useState<ProfileTab>('posts');
   const orders = useAsync(() => dataService.getOrders(profile?.id), [profile?.id]);
   const posts = useAsync(() => dataService.getPosts(profile?.id), [profile?.id]);
   const favorites = useAsync(() => dataService.getProducts({ favoritesOnly: true, userId: profile?.id }), [profile?.id]);
@@ -57,7 +58,7 @@ export function ProfilePage() {
     };
     const updated = await dataService.updateProfile(profile.id, payload);
     setProfile(updated);
-    toast.success('Perfil atualizado 💙', 'A matilha já vê suas novidades.');
+    toast.success('Perfil atualizado 💙', 'A matilha ja ve suas novidades.');
     setEditing(false);
   }
 
@@ -69,111 +70,100 @@ export function ProfilePage() {
     toast.success('Foto atualizada 📸', 'Seu perfil ficou com a sua cara.');
   }
 
-  if (!profile) return <EmptyState title="Perfil não encontrado" description="Entre novamente para acessar sua matilha." />;
+  if (!profile) return <EmptyState title="Perfil nao encontrado" description="Entre novamente para acessar sua matilha." />;
 
   return (
-    <div>
-      <PageHeader eyebrow="Perfil" title="Seu canto na matilha" description="Foto, dados, patinhas, favoritos e cupons ficam aqui." />
-      <ProfileHeader profile={profile} ordersCount={orders.data?.length ?? 0} onEdit={openEdit} onAvatarChange={handleAvatarChange} />
+    <div className="mx-auto max-w-[935px] lg:mx-0">
+      <ProfileHeader
+        profile={profile}
+        ordersCount={orders.data?.length ?? 0}
+        postsCount={ownPosts.length}
+        onEdit={openEdit}
+        onAvatarChange={handleAvatarChange}
+      />
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
-          <Card className="p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-black">Dados do perfil</h2>
-              <Button variant="outline" onClick={openEdit}>
-                Editar ✏️
-              </Button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-brand bg-husky-beige/25 p-3 dark:bg-white/8">
-                <p className="flex items-center gap-2 text-xs font-black uppercase text-husky-blue"><Mail className="h-4 w-4" /> E-mail</p>
-                <p className="mt-1 break-words text-sm font-semibold">{profile.email}</p>
-              </div>
-              <div className="rounded-brand bg-husky-beige/25 p-3 dark:bg-white/8">
-                <p className="flex items-center gap-2 text-xs font-black uppercase text-husky-blue"><Phone className="h-4 w-4" /> WhatsApp</p>
-                <p className="mt-1 text-sm font-semibold">{profile.phone || 'Não informado'}</p>
-              </div>
-              <div className="rounded-brand bg-husky-beige/25 p-3 dark:bg-white/8">
-                <p className="flex items-center gap-2 text-xs font-black uppercase text-husky-blue"><MapPin className="h-4 w-4" /> Bairro</p>
-                <p className="mt-1 text-sm font-semibold">{profile.neighborhood || 'Não informado'}</p>
-              </div>
-              <div className="rounded-brand bg-husky-beige/25 p-3 dark:bg-white/8">
-                <p className="flex items-center gap-2 text-xs font-black uppercase text-husky-blue"><CalendarDays className="h-4 w-4" /> Aniversário</p>
-                <p className="mt-1 text-sm font-semibold">{profile.birth_date || 'Não informado'}</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <MessageSquareText className="h-5 w-5 text-husky-blue" />
-              <h2 className="text-xl font-black">Posts publicados</h2>
-            </div>
-            {ownPosts.length ? (
-              <div className="grid gap-3 sm:grid-cols-3">
-                {ownPosts.slice(0, 6).map((post) => (
-                  <div key={post.id} className="overflow-hidden rounded-brand bg-husky-beige/20 dark:bg-white/8">
-                    {post.media_url ? (
-                      <SocialMedia url={post.media_url} mediaType={post.media_type} alt={post.title} className="aspect-square w-full object-cover" />
-                    ) : (
-                      <div className="grid aspect-square place-items-center p-3 text-center text-sm font-bold text-husky-brown/70 dark:text-husky-cream/70">
-                        {post.content}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="Nenhum post ainda" description="Quando você publicar no feed, aparece aqui." />
-            )}
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Heart className="h-5 w-5 text-husky-blue" />
-              <h2 className="text-xl font-black">Guardados no pote</h2>
-            </div>
-            {favorites.data?.length ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {favorites.data.slice(0, 4).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <EmptyState title="Nada guardado ainda" description="Favoritos aparecem aqui quando você guardar um potinho." />
-            )}
-          </Card>
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Star className="h-5 w-5 text-husky-blue" />
-              <h2 className="text-xl font-black">Uivos da Matilha</h2>
-            </div>
-            <div className="space-y-3">
-              {ownReviews.length ? (
-                ownReviews.slice(0, 4).map((review) => (
-                  <div key={review.id} className="rounded-brand bg-husky-beige/25 p-3 text-sm dark:bg-white/8">
-                    <p className="font-black">{review.product?.name ?? 'Pedido Husky'} · {review.rating}/5 ⭐</p>
-                    <p className="mt-1 text-husky-brown/72 dark:text-husky-cream/72">{review.comment}</p>
-                  </div>
-                ))
-              ) : (
-                <EmptyState title="Sem uivos ainda" description="Suas avaliações aparecem aqui depois dos pedidos." />
-              )}
-            </div>
-          </Card>
+      <div className="border-b border-black/10 bg-white dark:border-white/10 dark:bg-[#0d1118] lg:rounded-t-[12px] lg:border-x lg:border-t">
+        <div className="grid grid-cols-3">
+          {[
+            { id: 'posts' as const, label: 'Posts', icon: Grid3X3 },
+            { id: 'saved' as const, label: 'Guardados', icon: Bookmark },
+            { id: 'reviews' as const, label: 'Uivos', icon: MessageSquareText },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                className={`flex items-center justify-center gap-2 border-t-2 py-3 text-xs font-black uppercase tracking-wide ${
+                  tab === item.id ? 'border-black dark:border-white' : 'border-transparent text-black/45 dark:text-white/45'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
-        <div className="space-y-5">
-          <Card className="p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Gift className="h-5 w-5 text-husky-blue" />
-              <h2 className="text-xl font-black">Cupons disponíveis</h2>
-            </div>
-            <div className="space-y-3">
-              {(coupons.data ?? []).slice(0, 2).map((coupon) => (
-                <CouponCard key={coupon.id} coupon={coupon} />
-              ))}
-            </div>
-          </Card>
+      </div>
+
+      {tab === 'posts' ? (
+        ownPosts.length ? (
+          <div className="grid grid-cols-3 gap-0.5 bg-white dark:bg-[#0d1118] lg:rounded-b-[12px] lg:border-x lg:border-b lg:border-black/10 lg:dark:border-white/10">
+            {ownPosts.map((post) => (
+              <div key={post.id} className="relative aspect-square overflow-hidden bg-black">
+                {post.media_url ? (
+                  <SocialMedia url={post.media_url} mediaType={post.media_type} alt={post.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="grid h-full place-items-center bg-husky-blue p-3 text-center text-xs font-black text-white">{post.title}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="Nenhum post ainda" description="Quando voce publicar no feed, aparece aqui." />
+        )
+      ) : null}
+
+      {tab === 'saved' ? (
+        favorites.data?.length ? (
+          <div className="grid grid-cols-2 gap-0.5 bg-white dark:bg-[#0d1118] sm:grid-cols-3 lg:rounded-b-[12px] lg:border-x lg:border-b lg:border-black/10 lg:dark:border-white/10">
+            {favorites.data.map((product) => (
+              <Link key={product.id} to={`/app/produtos/${product.slug}`} className="relative aspect-square overflow-hidden bg-black">
+                {product.image_url ? <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" /> : null}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2 text-xs font-black text-white">
+                  {product.name}
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <EmptyState title="Nada guardado ainda" description="Favoritos aparecem aqui quando voce guardar um potinho." />
+        )
+      ) : null}
+
+      {tab === 'reviews' ? (
+        <div className="space-y-3 bg-white p-4 dark:bg-[#0d1118] lg:rounded-b-[12px] lg:border-x lg:border-b lg:border-black/10 lg:dark:border-white/10">
+          {ownReviews.length ? (
+            ownReviews.map((review) => (
+              <div key={review.id} className="border-b border-black/10 pb-3 text-sm last:border-0 dark:border-white/10">
+                <p className="flex items-center gap-2 font-black">
+                  <Star className="h-4 w-4 fill-current text-husky-blue" />
+                  {review.product?.name ?? 'Pedido Husky'} · {review.rating}/5
+                </p>
+                <p className="mt-1 text-black/70 dark:text-white/70">{review.comment}</p>
+              </div>
+            ))
+          ) : (
+            <EmptyState title="Sem uivos ainda" description="Suas avaliacoes aparecem aqui depois dos pedidos." />
+          )}
         </div>
+      ) : null}
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {(coupons.data ?? []).slice(0, 2).map((coupon) => (
+          <CouponCard key={coupon.id} coupon={coupon} />
+        ))}
       </div>
 
       <Modal open={editing} onClose={() => setEditing(false)} title="Editar perfil" size="lg">
@@ -183,7 +173,7 @@ export function ProfilePage() {
           </div>
           <Input label="Nome" value={profileForm.name ?? ''} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
           <Input label="Telefone" value={profileForm.phone ?? ''} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} />
-          <Input label="Data de aniversário" type="date" value={profileForm.birth_date ?? ''} onChange={(event) => setForm((current) => ({ ...current, birth_date: event.target.value }))} />
+          <Input label="Data de aniversario" type="date" value={profileForm.birth_date ?? ''} onChange={(event) => setForm((current) => ({ ...current, birth_date: event.target.value }))} />
           <Input label="Bairro" value={profileForm.neighborhood ?? ''} onChange={(event) => setForm((current) => ({ ...current, neighborhood: event.target.value }))} />
           <Textarea label="Bio" className="md:col-span-2" value={profileForm.bio ?? ''} onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))} />
           <Button type="submit">Salvar perfil 💙</Button>

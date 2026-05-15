@@ -1,6 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Bookmark, MessageCircle, PawPrint, Repeat2, Send, Share2, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bookmark, MessageCircle, MoreHorizontal, PawPrint, Repeat2, Send, ShoppingBag } from 'lucide-react';
 import type { Post, PostComment } from '../types/domain';
 import { dataService } from '../services/dataService';
 import { formatDate } from '../utils/format';
@@ -8,9 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../contexts/ToastContext';
 import { Avatar } from './ui/Avatar';
-import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
-import { Card } from './ui/Card';
 import { Textarea } from './ui/Textarea';
 import { EmptyState } from './ui/EmptyState';
 import { huskyBrand } from '../config/huskyBrand';
@@ -64,7 +61,7 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
     const created = await dataService.addPostComment(post.id, profile.id, comment.trim());
     setComments((current) => [...current, { ...created, profile }]);
     setComment('');
-    toast.success('Comentário publicado 💬', 'Você ganhou patinhas pela participação.');
+    toast.success('Comentario publicado 💬', 'Voce ganhou patinhas pela participacao.');
     onChange?.();
   }
 
@@ -74,83 +71,104 @@ export function PostCard({ post, onChange }: { post: Post; onChange?: () => void
       await navigator.share({ title: post.title, text: post.content, url });
     } else {
       await navigator.clipboard.writeText(url);
-      toast.info('Link copiado', 'Agora é só mandar para a matilha.');
+      toast.info('Link copiado', 'Agora e so mandar para a matilha.');
     }
   }
 
   const authorName = post.profile?.name ?? (post.created_by ? 'Cliente da Matilha' : 'Husky Confeiteiro');
-  const authorAvatar = post.profile?.avatar_url ?? (post.created_by ? null : huskyBrand.assets.mascot);
+  const authorAvatar = post.profile?.avatar_url ?? (post.created_by ? null : huskyBrand.assets.logo);
 
   return (
-    <Card className="overflow-hidden">
-      <div className="flex items-center gap-3 p-4">
-        <Avatar src={authorAvatar} name={authorName} />
+    <article className="overflow-hidden border-y border-black/10 bg-white dark:border-white/10 dark:bg-[#0d1118] lg:rounded-[12px] lg:border">
+      <header className="flex items-center gap-3 px-3 py-3">
+        <Avatar src={authorAvatar} name={authorName} size="sm" className="insta-ring h-10 w-10 p-0.5" />
         <div className="min-w-0 flex-1">
-          <p className="font-black text-husky-cocoa dark:text-husky-cream">{authorName}</p>
-          <p className="text-xs font-semibold text-husky-brown/60 dark:text-husky-cream/60">{formatDate(post.created_at)} · {post.type}</p>
+          <p className="truncate text-sm font-black">{authorName}</p>
+          <p className="truncate text-[11px] font-semibold text-black/50 dark:text-white/50">{formatDate(post.created_at)} · {post.type}</p>
         </div>
-        <Badge tone="cream">{post.type}</Badge>
+        <MoreHorizontal className="h-5 w-5" />
+      </header>
+
+      <div className="bg-black">
+        {post.media_url ? (
+          <SocialMedia url={post.media_url} mediaType={post.media_type} alt={post.title} className="max-h-[620px] w-full object-cover" />
+        ) : (
+          <div className="grid aspect-square place-items-center bg-gradient-to-br from-husky-blue via-husky-sky to-husky-beige p-8 text-center text-2xl font-black text-white">
+            {post.title}
+          </div>
+        )}
       </div>
-      <SocialMedia url={post.media_url} mediaType={post.media_type} alt={post.title} />
-      <div className="p-4">
-        <h3 className="text-xl font-black text-husky-cocoa dark:text-husky-cream">{post.title}</h3>
-        <p className="mt-2 whitespace-pre-line text-sm leading-6 text-husky-brown/78 dark:text-husky-cream/72">{post.content}</p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button variant={post.is_liked ? 'cream' : 'ghost'} leftIcon={<PawPrint className="h-5 w-5" />} onClick={handlePaw}>
-            Curtir 🐾
-          </Button>
-          <Button variant="ghost" leftIcon={<MessageCircle className="h-5 w-5" />} onClick={openComments}>
-            Comentar 💬
-          </Button>
-          <Button variant={post.is_reposted ? 'cream' : 'ghost'} leftIcon={<Repeat2 className="h-5 w-5" />} onClick={handleRepost}>
-            Repostar 🔁
-          </Button>
-          <Button variant="ghost" leftIcon={<Share2 className="h-5 w-5" />} onClick={sharePost}>
-            Compartilhar ✨
-          </Button>
-          <Button variant={post.is_saved ? 'cream' : 'ghost'} leftIcon={<Bookmark className="h-5 w-5" />} onClick={handleSave}>
-            Salvar 💙
-          </Button>
-          {post.product ? (
-            <Button leftIcon={<ShoppingBag className="h-4 w-4" />} onClick={() => addToCart(post.product!)}>
-              Pedir agora 🍰
-            </Button>
-          ) : null}
+
+      <div className="px-3 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button type="button" title="Dar patinha" onClick={handlePaw} className={post.is_liked ? 'text-husky-blue' : undefined}>
+              <PawPrint className="h-7 w-7" />
+            </button>
+            <button type="button" title="Comentar" onClick={openComments}>
+              <MessageCircle className="h-7 w-7" />
+            </button>
+            <button type="button" title="Compartilhar" onClick={sharePost}>
+              <Send className="h-7 w-7" />
+            </button>
+            <button type="button" title="Republicar" onClick={handleRepost} className={post.is_reposted ? 'text-husky-blue' : undefined}>
+              <Repeat2 className="h-7 w-7" />
+            </button>
+          </div>
+          <button type="button" title="Salvar" onClick={handleSave} className={post.is_saved ? 'text-husky-blue' : undefined}>
+            <Bookmark className="h-7 w-7" />
+          </button>
         </div>
-        <div className="mt-3 flex gap-4 text-sm font-semibold text-husky-brown/65 dark:text-husky-cream/65">
-          <span>{post.likes_count ?? 0} patinhas</span>
-          <span>{post.comments_count ?? 0} comentários</span>
+
+        <p className="mt-3 text-sm font-black">{post.likes_count ?? 0} patinhas</p>
+        <p className="mt-1 text-sm leading-6">
+          <span className="font-black">{authorName}</span>{' '}
+          <span className="font-semibold">{post.title}</span>{' '}
+          <span className="whitespace-pre-line text-black/82 dark:text-white/82">{post.content}</span>
+        </p>
+        <button type="button" onClick={openComments} className="mt-2 text-sm font-semibold text-black/45 dark:text-white/45">
+          Ver todos os {post.comments_count ?? 0} comentarios
+        </button>
+        <div className="mt-1 flex gap-3 text-xs font-semibold text-black/45 dark:text-white/45">
           <span>{post.reposts_count ?? 0} reposts</span>
           <span>{post.saves_count ?? 0} salvos</span>
         </div>
+
+        {post.product ? (
+          <Button className="mt-3 w-full" leftIcon={<ShoppingBag className="h-4 w-4" />} onClick={() => addToCart(post.product!)}>
+            Pedir agora 🍰
+          </Button>
+        ) : null}
+
         {commentsOpen ? (
-          <div className="mt-4 border-t border-husky-blue/10 pt-4 dark:border-white/10">
+          <div className="mt-4 border-t border-black/10 pt-4 dark:border-white/10">
             {loadingComments ? (
-              <p className="text-sm text-husky-brown/60 dark:text-husky-cream/60">Farejando comentários...</p>
+              <p className="text-sm text-black/50 dark:text-white/50">Farejando comentarios...</p>
             ) : comments.length ? (
               <div className="space-y-3">
                 {comments.map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <Avatar src={item.profile?.avatar_url} name={item.profile?.name ?? 'Cliente'} size="sm" />
-                    <div className="rounded-brand bg-husky-beige/25 px-3 py-2 text-sm dark:bg-white/8">
-                      <p className="font-bold text-husky-cocoa dark:text-husky-cream">{item.profile?.name ?? 'Cliente da Matilha'}</p>
-                      <p className="text-husky-brown/75 dark:text-husky-cream/75">{item.content}</p>
-                    </div>
+                    <p className="min-w-0 text-sm leading-5">
+                      <span className="font-black">{item.profile?.name ?? 'Cliente da Matilha'}</span>{' '}
+                      <span className="text-black/78 dark:text-white/78">{item.content}</span>
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <EmptyState title="Ainda sem comentários" description="Seja a primeira pessoa a dar um uivo por aqui." />
+              <EmptyState title="Ainda sem comentarios" description="Seja a primeira pessoa a dar um uivo por aqui." />
             )}
-            <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={handleComment}>
-              <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Escreva um uivo rápido..." className="min-h-12 sm:min-h-12" />
-              <Button type="submit" size="lg" leftIcon={<Send className="h-4 w-4" />}>
-                Enviar 💬
+            <form className="mt-4 flex items-end gap-2" onSubmit={handleComment}>
+              <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Adicione um comentario..." className="min-h-11 resize-none rounded-full" />
+              <Button type="submit" size="icon">
+                <Send className="h-4 w-4" />
+                Enviar
               </Button>
             </form>
           </div>
         ) : null}
       </div>
-    </Card>
+    </article>
   );
 }

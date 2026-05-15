@@ -1,12 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppProviders } from './contexts/AppProviders';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { AppLayout } from './layouts/AppLayout';
 import { AdminLayout } from './layouts/AdminLayout';
-import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/public/LoginPage';
-import { RegisterPage } from './pages/public/RegisterPage';
-import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage';
+import { useAuth } from './contexts/AuthContext';
 import { FeedPage } from './pages/client/FeedPage';
 import { MenuPage } from './pages/client/MenuPage';
 import { ProductDetailPage } from './pages/client/ProductDetailPage';
@@ -40,14 +39,21 @@ import { AdminChatPage } from './pages/admin/AdminChatPage';
 import { AdminProfilePage } from './pages/admin/AdminProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
+function RootRedirect() {
+  const { loading, isAuthenticated, isAdmin } = useAuth();
+  if (loading) return <LoadingSpinner className="min-h-screen" />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <Navigate to={isAdmin ? '/admin' : '/app/feed'} replace />;
+}
+
 export default function App() {
   return (
     <AppProviders>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastro" element={<RegisterPage />} />
-        <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
+        <Route path="/cadastro" element={<Navigate to="/login" replace />} />
+        <Route path="/recuperar-senha" element={<Navigate to="/login" replace />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/app" element={<AppLayout />}>

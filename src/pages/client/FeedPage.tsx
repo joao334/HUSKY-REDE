@@ -1,13 +1,10 @@
 import { FormEvent, useState } from 'react';
-import { Bell, Camera, ImagePlus, Search, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { PageHeader } from '../../components/PageHeader';
+import { Camera, ImagePlus, PlusCircle } from 'lucide-react';
 import { PostCard } from '../../components/PostCard';
 import { SocialMedia } from '../../components/SocialMedia';
 import { StoryBubble } from '../../components/StoryBubble';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
-import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Input } from '../../components/ui/Input';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
@@ -50,7 +47,7 @@ export function FeedPage() {
       setPostText('');
       setPostMediaUrl(null);
       await posts.reload();
-      toast.success('Post publicado ✨', 'Sua matilha já pode curtir, comentar e repostar.');
+      toast.success('Post publicado ✨', 'Sua matilha ja pode curtir, comentar e repostar.');
     } catch (error) {
       toast.error('Nao deu para publicar', error instanceof Error ? error.message : undefined);
     } finally {
@@ -75,7 +72,7 @@ export function FeedPage() {
       setStoryMediaUrl(null);
       setStoryOpen(false);
       await stories.reload();
-      toast.success('Story no ar 📸', 'Ele fica disponível por 24 horas.');
+      toast.success('Story no ar 📸', 'Ele fica disponivel por 24 horas.');
     } catch (error) {
       toast.error('Nao deu para publicar o story', error instanceof Error ? error.message : undefined);
     } finally {
@@ -84,112 +81,103 @@ export function FeedPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Feed Social"
-        title={`Oi, ${profile?.name?.split(' ')[0] ?? 'matilha'}!`}
-        description="Pronto para adoçar o dia? Veja stories, posts e lançamentos da Husky Confeiteiro."
-        action={
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" title="Buscar">
-              <Search className="h-5 w-5" />
-              Buscar 🔎
-            </Button>
-            <Link to="/app/notificacoes">
-              <Button variant="outline" size="icon" title="Notificações">
-                <Bell className="h-5 w-5" />
-                Notificações 🔔
-              </Button>
-            </Link>
-            <Link to="/app/carrinho">
-              <Button size="icon" title="Carrinho">
-                <ShoppingBag className="h-5 w-5" />
-                Carrinho 🛒
-              </Button>
-            </Link>
+    <div className="mx-auto max-w-[470px] lg:mx-0">
+      <section className="border-b border-black/10 bg-white py-3 dark:border-white/10 dark:bg-[#0d1118] lg:rounded-[12px] lg:border">
+        <div className="flex gap-3 overflow-x-auto px-3 pb-1 soft-scrollbar">
+          <button type="button" className="w-[74px] shrink-0 text-center" onClick={() => setStoryOpen(true)}>
+            <span className="relative mx-auto block h-[66px] w-[66px] rounded-full border border-black/10 p-0.5 dark:border-white/10">
+              <Avatar src={profile?.avatar_url} name={profile?.name} className="h-full w-full" />
+              <span className="absolute bottom-0 right-0 grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-husky-blue text-white dark:border-[#0d1118]">
+                <PlusCircle className="h-4 w-4" />
+              </span>
+            </span>
+            <span className="mt-1 block truncate text-[11px] font-semibold">Seu story</span>
+          </button>
+          {stories.loading ? (
+            <LoadingSpinner className="min-h-[74px] w-full" label="Abrindo stories..." />
+          ) : stories.data?.length ? (
+            stories.data.map((story) => <StoryBubble key={story.id} story={story} />)
+          ) : (
+            <div className="grid min-w-[220px] place-items-center text-center text-xs font-semibold text-black/45 dark:text-white/45">
+              Sem stories agora
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-3 border-y border-black/10 bg-white dark:border-white/10 dark:bg-[#0d1118] lg:rounded-[12px] lg:border">
+        <form onSubmit={publishPost}>
+          <div className="flex items-start gap-3 p-3">
+            <Avatar src={profile?.avatar_url} name={profile?.name} />
+            <Textarea
+              value={postText}
+              onChange={(event) => setPostText(event.target.value)}
+              placeholder="Compartilhe uma foto, video ou uivo doce..."
+              className="min-h-[76px] border-0 bg-transparent px-0 shadow-none ring-0 focus:ring-0"
+            />
           </div>
-        }
-      />
-
-      <div className="mb-5 flex gap-4 overflow-x-auto pb-2 soft-scrollbar">
-        <button type="button" className="w-24 shrink-0 text-center" onClick={() => setStoryOpen(true)}>
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-husky-blue text-white shadow-card">
-            <Camera className="h-7 w-7" />
-          </span>
-          <span className="mt-2 block truncate text-xs font-bold text-husky-brown dark:text-husky-cream">Seu story +</span>
-        </button>
-        {stories.loading ? (
-          <LoadingSpinner className="min-h-24 w-full" label="Abrindo stories..." />
-        ) : stories.data?.length ? (
-          stories.data.map((story) => <StoryBubble key={story.id} story={story} />)
-        ) : (
-          <EmptyState title="Sem stories agora" description="A Husky volta logo com novidades fresquinhas." />
-        )}
-      </div>
-
-      <div className="mx-auto max-w-2xl space-y-5">
-        <Card className="p-4">
-          <form className="space-y-3" onSubmit={publishPost}>
-            <div className="flex gap-3">
-              <Avatar src={profile?.avatar_url} name={profile?.name} />
-              <Textarea
-                value={postText}
-                onChange={(event) => setPostText(event.target.value)}
-                placeholder="Compartilhe uma foto, vídeo ou novidade com a matilha..."
-                className="min-h-24"
-              />
+          {postMediaUrl ? (
+            <div className="border-y border-black/10 dark:border-white/10">
+              <SocialMedia url={postMediaUrl} mediaType={postMediaType} alt="Previa do post" className="aspect-square w-full object-cover" />
             </div>
-            {postMediaUrl ? (
-              <div className="overflow-hidden rounded-brand border border-husky-blue/10 dark:border-white/10">
-                <SocialMedia url={postMediaUrl} mediaType={postMediaType} alt="Prévia do post" />
-              </div>
-            ) : null}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <MediaUploader
-                folder="feed"
-                label="Foto/vídeo 📸"
-                accept="image/*,video/*"
-                showPreview={false}
-                onChange={(url, file) => {
-                  setPostMediaUrl(url);
-                  setPostMediaType(mediaTypeFromFile(file));
-                }}
-              />
-              <Button type="submit" isLoading={posting} disabled={!postText.trim() && !postMediaUrl} leftIcon={<ImagePlus className="h-4 w-4" />}>
-                Publicar ✨
-              </Button>
-            </div>
-          </form>
-        </Card>
+          ) : null}
+          <div className="flex items-center justify-between gap-3 border-t border-black/10 px-3 py-2 dark:border-white/10">
+            <MediaUploader
+              folder="feed"
+              label="Foto/video 📸"
+              accept="image/*,video/*"
+              showPreview={false}
+              onChange={(url, file) => {
+                setPostMediaUrl(url);
+                setPostMediaType(mediaTypeFromFile(file));
+              }}
+            />
+            <Button type="submit" isLoading={posting} disabled={!postText.trim() && !postMediaUrl} leftIcon={<ImagePlus className="h-4 w-4" />}>
+              Publicar
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      <section className="mt-3 space-y-3">
         {posts.loading ? (
           <LoadingSpinner />
         ) : posts.data?.length ? (
           posts.data.map((post) => <PostCard key={post.id} post={post} onChange={() => posts.reload().catch(() => undefined)} />)
         ) : (
-          <EmptyState title="Feed quietinho" description="Quando a cozinha postar, aparece aqui." />
+          <EmptyState title="Feed quietinho" description="Quando a matilha postar, aparece aqui." />
         )}
-      </div>
+      </section>
 
       <Modal open={storyOpen} onClose={() => setStoryOpen(false)} title="Novo story" size="lg">
-        <form className="space-y-4" onSubmit={publishStory}>
-          <Input label="Título" value={storyTitle} onChange={(event) => setStoryTitle(event.target.value)} placeholder="Ex.: Meu potinho favorito" />
-          <Textarea label="Legenda" value={storyText} onChange={(event) => setStoryText(event.target.value)} placeholder="Escreva uma legenda curta..." />
-          {storyMediaUrl ? (
-            <SocialMedia url={storyMediaUrl} mediaType={storyMediaType} alt="Prévia do story" className="max-h-[420px] w-full rounded-brand object-cover" />
-          ) : null}
-          <MediaUploader
-            folder="stories"
-            label="Escolher foto/vídeo 📸"
-            accept="image/*,video/*"
-            showPreview={false}
-            onChange={(url, file) => {
-              setStoryMediaUrl(url);
-              setStoryMediaType(mediaTypeFromFile(file));
-            }}
-          />
-          <Button type="submit" isLoading={storyPosting} disabled={!storyMediaUrl}>
-            Publicar story 💙
-          </Button>
+        <form className="grid gap-4 md:grid-cols-[1fr_0.9fr]" onSubmit={publishStory}>
+          <div className="overflow-hidden rounded-[22px] bg-black">
+            {storyMediaUrl ? (
+              <SocialMedia url={storyMediaUrl} mediaType={storyMediaType} alt="Previa do story" className="aspect-[9/16] w-full object-cover" />
+            ) : (
+              <div className="grid aspect-[9/16] place-items-center p-8 text-center text-white/70">
+                <Camera className="mb-3 h-9 w-9" />
+                Escolha uma foto ou video vertical para o story
+              </div>
+            )}
+          </div>
+          <div className="space-y-4">
+            <Input label="Titulo" value={storyTitle} onChange={(event) => setStoryTitle(event.target.value)} placeholder="Ex.: Meu potinho favorito" />
+            <Textarea label="Legenda" value={storyText} onChange={(event) => setStoryText(event.target.value)} placeholder="Escreva uma legenda curta..." />
+            <MediaUploader
+              folder="stories"
+              label="Escolher foto/video 📸"
+              accept="image/*,video/*"
+              showPreview={false}
+              onChange={(url, file) => {
+                setStoryMediaUrl(url);
+                setStoryMediaType(mediaTypeFromFile(file));
+              }}
+            />
+            <Button type="submit" isLoading={storyPosting} disabled={!storyMediaUrl} className="w-full">
+              Publicar story 💙
+            </Button>
+          </div>
         </form>
       </Modal>
     </div>

@@ -112,6 +112,17 @@ const demoTables: Record<string, unknown[]> = {
   product_recipes: [],
 };
 
+const crudTablesWithUpdatedAt = new Set<CrudTable>([
+  'products',
+  'posts',
+  'coupons',
+  'orders',
+  'inventory_items',
+  'users_profiles',
+  'post_comments',
+  'settings',
+]);
+
 function makeId(prefix = 'id') {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
@@ -162,6 +173,10 @@ function friendlyUploadError(error: unknown) {
   }
 
   return message;
+}
+
+function crudUpdatePayload(table: CrudTable, values: AnyRecord) {
+  return crudTablesWithUpdatedAt.has(table) ? { ...values, updated_at: new Date().toISOString() } : values;
 }
 
 function ensureDemoSeedVersion() {
@@ -1400,7 +1415,7 @@ export const dataService = {
     }
     const { data, error } = await getSupabase()
       .from(table)
-      .update({ ...values, updated_at: new Date().toISOString() })
+      .update(crudUpdatePayload(table, values))
       .eq('id', id)
       .select('*')
       .single();

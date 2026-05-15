@@ -1,35 +1,35 @@
-import { ClipboardList, Home, Trophy, UserRound, Utensils } from 'lucide-react';
+import { Home, PlusSquare, Search, ShoppingBag, UserRound } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '../utils/cn';
 
 const items = [
-  { to: '/app/feed', label: 'Feed', icon: Home, emoji: '✨' },
-  { to: '/app/loja', label: 'Loja', icon: Utensils, emoji: '🍰' },
-  { to: '/app/pedidos', label: 'Pedidos', icon: ClipboardList, emoji: '🧾' },
-  { to: '/app/matilha', label: 'Matilha', icon: Trophy, emoji: '🏆' },
-  { to: '/app/perfil', label: 'Perfil', icon: UserRound, emoji: '💙' },
+  { to: '/app/feed', label: 'Feed', icon: Home },
+  { to: '/app/loja', label: 'Explorar', icon: Search },
+  { to: '/app/feed', label: 'Criar', icon: PlusSquare },
+  { to: '/app/pedidos', label: 'Pedidos', icon: ShoppingBag },
+  { to: '/app/perfil', label: 'Perfil', icon: UserRound },
 ];
 
 export function BottomNavigation() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-husky-blue/10 bg-husky-cream/95 px-2 py-2 shadow-soft backdrop-blur md:hidden dark:border-white/10 dark:bg-[#171b22]/95 safe-bottom">
-      <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/96 px-4 py-2 shadow-[0_-8px_24px_rgba(0,0,0,0.06)] backdrop-blur md:hidden dark:border-white/10 dark:bg-[#0d1118]/96 safe-bottom">
+      <div className="mx-auto grid max-w-md grid-cols-5">
         {items.map((item) => {
+          const Icon = item.icon;
           return (
             <NavLink
-              key={item.to}
+              key={`${item.to}-${item.label}`}
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center justify-center gap-1 rounded-brand px-2 py-2 text-[11px] font-bold transition',
-                  isActive
-                    ? 'bg-husky-blue text-white'
-                    : 'text-husky-brown/70 hover:bg-husky-beige/35 dark:text-husky-cream/70 dark:hover:bg-white/8',
+                  'flex h-11 items-center justify-center rounded-[12px] transition',
+                  isActive ? 'text-black dark:text-white' : 'text-black/70 dark:text-white/70',
                 )
               }
+              title={item.label}
             >
-              <span className="text-lg leading-none" aria-hidden="true">{item.emoji}</span>
-              <span>{item.label}</span>
+              <Icon className="h-7 w-7" />
+              <span className="sr-only">{item.label}</span>
             </NavLink>
           );
         })}

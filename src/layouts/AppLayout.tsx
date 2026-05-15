@@ -1,40 +1,37 @@
 import {
   Bell,
-  ClipboardList,
   Gift,
+  Heart,
   Home,
   LogOut,
   MessageCircle,
   Moon,
+  PlusSquare,
   Search,
   ShoppingBag,
   Sun,
   Trophy,
   UserRound,
   Utensils,
-  Vote,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { Avatar } from '../components/ui/Avatar';
 import { BottomNavigation } from '../components/BottomNavigation';
-import { BrandMark } from '../components/BrandMark';
-import { Button } from '../components/ui/Button';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { cn } from '../utils/cn';
 
 const navItems = [
-  { to: '/app/feed', label: 'Feed', icon: Home, emoji: '✨' },
-  { to: '/app/loja', label: 'Loja', icon: Utensils, emoji: '🍰' },
-  { to: '/app/pedidos', label: 'Pedidos', icon: ClipboardList, emoji: '🧾' },
-  { to: '/app/matilha', label: 'Clube da Matilha', icon: Trophy, emoji: '🐾' },
-  { to: '/app/ranking', label: 'Ranking', icon: Trophy, emoji: '🏆' },
-  { to: '/app/cupons', label: 'Cupons', icon: Gift, emoji: '🎟️' },
-  { to: '/app/notificacoes', label: 'Notificações', icon: Bell, emoji: '🔔' },
-  { to: '/app/chat', label: 'Chat', icon: MessageCircle, emoji: '💬' },
-  { to: '/app/enquetes', label: 'Enquetes', icon: Vote, emoji: '📊' },
-  { to: '/app/perfil', label: 'Perfil', icon: UserRound, emoji: '💙' },
+  { to: '/app/feed', label: 'Feed', icon: Home },
+  { to: '/app/loja', label: 'Loja', icon: Utensils },
+  { to: '/app/feed', label: 'Criar', icon: PlusSquare },
+  { to: '/app/pedidos', label: 'Pedidos', icon: ShoppingBag },
+  { to: '/app/matilha', label: 'Matilha', icon: Trophy },
+  { to: '/app/cupons', label: 'Cupons', icon: Gift },
+  { to: '/app/notificacoes', label: 'Avisos', icon: Bell },
+  { to: '/app/chat', label: 'Chat', icon: MessageCircle },
+  { to: '/app/perfil', label: 'Perfil', icon: UserRound },
 ];
 
 export function AppLayout() {
@@ -44,79 +41,114 @@ export function AppLayout() {
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen text-husky-cocoa dark:text-husky-cream">
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-husky-blue/10 bg-white/62 p-4 backdrop-blur lg:block dark:border-white/10 dark:bg-white/5">
-          <BrandMark />
-          <nav className="mt-8 space-y-1">
+    <div className="min-h-screen bg-[#fafafa] text-[#171717] dark:bg-[#080b10] dark:text-husky-cream">
+      <div className="mx-auto flex min-h-screen max-w-[1280px]">
+        <aside className="sticky top-0 hidden h-screen w-[245px] shrink-0 border-r border-black/10 bg-white px-5 py-6 lg:block dark:border-white/10 dark:bg-[#0d1118]">
+          <NavLink to="/app/feed" className="husky-script mb-8 block text-4xl font-black text-husky-cocoa dark:text-white">
+            Husky Club
+          </NavLink>
+          <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
-                  key={item.to}
+                  key={`${item.to}-${item.label}`}
                   to={item.to}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 rounded-brand px-3 py-2.5 text-sm font-bold transition',
+                      'flex items-center gap-4 rounded-[12px] px-3 py-3 text-[15px] font-semibold transition',
                       isActive
-                        ? 'bg-husky-blue text-white shadow-card'
-                        : 'text-husky-brown/75 hover:bg-husky-beige/35 dark:text-husky-cream/75 dark:hover:bg-white/8',
+                        ? 'bg-black text-white dark:bg-white dark:text-black'
+                        : 'text-[#171717] hover:bg-black/5 dark:text-husky-cream dark:hover:bg-white/10',
                     )
                   }
                 >
-                  <Icon className="h-5 w-5" />
-                  <span aria-hidden="true">{item.emoji}</span>
-                  {item.label}
+                  <Icon className="h-6 w-6" />
+                  <span>{item.label}</span>
                 </NavLink>
               );
             })}
           </nav>
+          <div className="absolute bottom-6 left-5 right-5 space-y-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex w-full items-center gap-4 rounded-[12px] px-3 py-3 text-left text-[15px] font-semibold hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              {theme === 'dark' ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+              Tema
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex w-full items-center gap-4 rounded-[12px] px-3 py-3 text-left text-[15px] font-semibold hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              <LogOut className="h-6 w-6" />
+              Sair
+            </button>
+          </div>
         </aside>
 
-        <main className="min-w-0 flex-1 pb-28 md:pb-8">
-          <header className="sticky top-0 z-30 border-b border-husky-blue/10 bg-husky-cream/80 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-[#171b22]/80 lg:px-8">
-            <div className="mx-auto flex max-w-6xl items-center gap-3">
-              <div className="lg:hidden">
-                <BrandMark compact />
-              </div>
-              <div className="hidden min-w-0 flex-1 items-center gap-2 rounded-full bg-white/75 px-4 py-2 text-husky-brown/55 ring-1 ring-husky-blue/10 dark:bg-white/8 dark:text-husky-cream/55 md:flex">
-                <Search className="h-4 w-4" />
-                <span className="text-sm font-semibold">Buscar posts, potinhos e achadinhos</span>
-              </div>
-              <div className="ml-auto flex items-center gap-2">
-                <NavLink to="/app/carrinho" className="relative">
-                  <Button variant="outline" size="icon">
-                    <ShoppingBag className="h-5 w-5" />
-                    Carrinho 🛒
-                  </Button>
+        <main className="min-w-0 flex-1 pb-24 lg:pb-0">
+          <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 px-4 py-3 backdrop-blur lg:hidden dark:border-white/10 dark:bg-[#0d1118]/95">
+            <div className="flex items-center justify-between">
+              <NavLink to="/app/feed" className="husky-script text-3xl font-black text-[#111] dark:text-white">
+                Husky Club
+              </NavLink>
+              <div className="flex items-center gap-4">
+                <NavLink to="/app/feed" title="Criar">
+                  <PlusSquare className="h-6 w-6" />
+                </NavLink>
+                <NavLink to="/app/notificacoes" title="Avisos">
+                  <Heart className="h-6 w-6" />
+                </NavLink>
+                <NavLink to="/app/carrinho" className="relative" title="Carrinho">
+                  <ShoppingBag className="h-6 w-6" />
                   {cartCount ? (
-                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-husky-brown px-1 text-[11px] font-black text-white">
+                    <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-husky-blue px-1 text-[11px] font-black text-white">
                       {cartCount}
                     </span>
                   ) : null}
                 </NavLink>
-                <NavLink to="/app/notificacoes">
-                  <Button variant="outline" size="icon">
-                    <Bell className="h-5 w-5" />
-                    Notificações 🔔
-                  </Button>
-                </NavLink>
-                <Button variant="ghost" size="icon" onClick={toggleTheme}>
-                  {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                  Tema ✨
-                </Button>
-                <NavLink to="/app/perfil" className="hidden sm:block">
-                  <Avatar src={profile?.avatar_url} name={profile?.name} />
-                </NavLink>
-                <Button variant="ghost" size="icon" onClick={logout}>
-                  <LogOut className="h-5 w-5" />
-                  Sair 👋
-                </Button>
               </div>
             </div>
           </header>
-          <div className="mx-auto max-w-6xl px-4 py-5 lg:px-8">
-            <Outlet />
+
+          <div className="mx-auto grid max-w-[975px] gap-8 px-0 py-0 lg:grid-cols-[minmax(0,630px)_300px] lg:px-6 lg:py-8">
+            <div className="min-w-0">
+              <Outlet />
+            </div>
+            <aside className="sticky top-8 hidden h-fit space-y-5 lg:block">
+              <div className="flex items-center gap-3">
+                <Avatar src={profile?.avatar_url} name={profile?.name} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-black">{profile?.name ?? 'Cliente da Matilha'}</p>
+                  <p className="truncate text-xs font-semibold text-black/50 dark:text-white/50">@huskyclub</p>
+                </div>
+                <NavLink to="/app/perfil" className="text-xs font-black text-husky-blue">
+                  Perfil
+                </NavLink>
+              </div>
+              <div className="rounded-[16px] border border-black/10 bg-white p-4 dark:border-white/10 dark:bg-white/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-black text-black/50 dark:text-white/50">Atalhos da matilha</p>
+                  <NavLink to="/app/ranking" className="text-xs font-black text-husky-blue">
+                    Ver ranking
+                  </NavLink>
+                </div>
+                <div className="mt-4 space-y-3 text-sm font-semibold">
+                  <NavLink to="/app/loja" className="flex items-center gap-3">
+                    <Search className="h-5 w-5" /> Explorar potinhos
+                  </NavLink>
+                  <NavLink to="/app/cupons" className="flex items-center gap-3">
+                    <Gift className="h-5 w-5" /> Cupons liberados
+                  </NavLink>
+                  <NavLink to="/app/chat" className="flex items-center gap-3">
+                    <MessageCircle className="h-5 w-5" /> Falar com a Husky
+                  </NavLink>
+                </div>
+              </div>
+            </aside>
           </div>
         </main>
       </div>
