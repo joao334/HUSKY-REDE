@@ -1,0 +1,25 @@
+import"./responsive-DLDRbQL4.js";/* empty css               */import{r as f,a as b,$ as r,t as g}from"./utils-CCU120BG.js";import"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";const t={img:null,scale:1,rotate:0,flipX:1,flipY:1,x:0,y:0,ratio:1,brightness:100,contrast:100,saturation:100,blur:0,temperature:0,text:"",sticker:"",filter:"none"},p={Original:"none",Vintage:"sepia(.35) contrast(1.05)",Cinema:"contrast(1.2) saturate(.85)",Retro:"sepia(.5) saturate(1.25)","P&B":"grayscale(1)",Quente:"sepia(.18) saturate(1.2)",Frio:"hue-rotate(190deg) saturate(1.08)",Vibrante:"saturate(1.55) contrast(1.08)",Suave:"brightness(1.06) saturate(.85)",Dramatico:"contrast(1.35) brightness(.9)",Matte:"contrast(.92) brightness(1.05) saturate(.9)",Clarendon:"contrast(1.22) saturate(1.25)",Lark:"brightness(1.08) saturate(1.15)",Juno:"contrast(1.12) sepia(.12) saturate(1.28)",Valencia:"sepia(.25) brightness(1.06) contrast(.96)"};function c(){return r("#photo-canvas")}function m(){return c().getContext("2d")}function o(){var n;const e=c(),a=m(),i=1200,s=Math.round(i/t.ratio);if(e.width=i,e.height=s,a.save(),a.clearRect(0,0,i,s),a.fillStyle="#000",a.fillRect(0,0,i,s),a.filter=`${t.filter} brightness(${t.brightness}%) contrast(${t.contrast}%) saturate(${t.saturation}%) blur(${t.blur}px)`,t.temperature&&(a.filter+=` sepia(${Math.max(t.temperature,0)/100}) hue-rotate(${t.temperature<0?-12:8}deg)`),t.img){const l=Math.max(i/t.img.width,s/t.img.height)*t.scale,u=t.img.width*l,d=t.img.height*l;a.translate(i/2+t.x,s/2+t.y),a.rotate(t.rotate*Math.PI/180),a.scale(t.flipX,t.flipY),a.drawImage(t.img,-u/2,-d/2,u,d)}a.restore(),a.filter="none",t.text&&(a.font="800 64px Inter, sans-serif",a.fillStyle=((n=r("#text-color"))==null?void 0:n.value)||"#ffffff",a.textAlign="center",a.fillText(t.text,i/2,s-110)),t.sticker&&(a.font="96px serif",a.fillText(t.sticker,i-130,130))}function h(e,a){t[e]=Number(a),o()}async function x(){await f(),b("criar",`
+    <div class="editor-page">
+      <section class="editor-stage"><canvas id="photo-canvas"></canvas></section>
+      <aside class="editor-panel">
+        <h1>Editor de foto</h1>
+        <input class="input" id="photo-file" type="file" accept="image/*">
+        <div class="ratio-grid">
+          ${[["1:1",1],["4:5",.8],["16:9",1.777],["9:16",.5625],["Livre",1.333]].map(([e,a])=>`<button class="chip ratio" data-ratio="${a}">${e}</button>`).join("")}
+        </div>
+        <div class="tool-grid">
+          <button class="btn secondary" id="left">Girar esquerda</button>
+          <button class="btn secondary" id="right">Girar direita</button>
+          <button class="btn secondary" id="flip-x">Espelhar H</button>
+          <button class="btn secondary" id="flip-y">Espelhar V</button>
+        </div>
+        ${["scale:Zoom:1:3:.01","x:Horizontal:-500:500:1","y:Vertical:-500:500:1","brightness:Brilho:0:200:1","contrast:Contraste:0:200:1","saturation:Saturacao:0:250:1","temperature:Temperatura:-100:100:1","blur:Desfoque:0:8:.1"].map(e=>{const[a,i,s,n,l]=e.split(":");return`<label class="range-row"><span>${i}</span><input data-range="${a}" type="range" min="${s}" max="${n}" step="${l}" value="${t[a]}"></label>`}).join("")}
+        <div class="filter-grid">${Object.keys(p).map(e=>`<button class="chip filter" data-filter="${e}">${e}</button>`).join("")}</div>
+        <label class="label">Texto sobre a imagem<input class="input" id="overlay-text"></label>
+        <label class="label">Cor do texto<input class="input" id="text-color" type="color" value="#ffffff"></label>
+        <label class="label">Sticker/emoji<input class="input" id="sticker" placeholder="✨"></label>
+        <button class="btn secondary" id="reset">Remover alteracoes</button>
+        <button class="btn" id="download">Baixar imagem editada</button>
+        <button class="btn" id="continue">Salvar e continuar postagem</button>
+      </aside>
+    </div>`),o(),r("#photo-file").onchange=e=>{const a=e.target.files[0];if(!a)return;const i=new Image;i.onload=()=>{t.img=i,o()},i.src=URL.createObjectURL(a)},document.querySelectorAll("[data-range]").forEach(e=>e.oninput=()=>h(e.dataset.range,e.value)),document.querySelectorAll(".ratio").forEach(e=>e.onclick=()=>{t.ratio=Number(e.dataset.ratio),o()}),document.querySelectorAll(".filter").forEach(e=>e.onclick=()=>{t.filter=p[e.dataset.filter],o()}),r("#left").onclick=()=>{t.rotate-=90,o()},r("#right").onclick=()=>{t.rotate+=90,o()},r("#flip-x").onclick=()=>{t.flipX*=-1,o()},r("#flip-y").onclick=()=>{t.flipY*=-1,o()},r("#overlay-text").oninput=e=>{t.text=e.target.value,o()},r("#text-color").oninput=o,r("#sticker").oninput=e=>{t.sticker=e.target.value,o()},r("#reset").onclick=()=>location.reload(),r("#download").onclick=()=>{const e=document.createElement("a");e.href=c().toDataURL("image/webp",.92),e.download="foto-editada.webp",e.click()},r("#continue").onclick=()=>{sessionStorage.setItem("edited-image",c().toDataURL("image/webp",.9)),g("Edicao salva."),location.href="/criar-post.html"}}document.body.dataset.page==="editor"&&x();
