@@ -49,7 +49,8 @@ create table public.polls (
   starts_at timestamp with time zone,
   ends_at timestamp with time zone,
   is_active boolean not null default true,
-  created_at timestamp with time zone not null default now()
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now()
 );
 
 create table public.coupons (
@@ -498,6 +499,7 @@ $$;
 create trigger set_users_profiles_updated_at before update on public.users_profiles for each row execute function public.set_updated_at();
 create trigger set_products_updated_at before update on public.products for each row execute function public.set_updated_at();
 create trigger set_posts_updated_at before update on public.posts for each row execute function public.set_updated_at();
+create trigger set_stories_updated_at before update on public.stories for each row execute function public.set_updated_at();
 create trigger set_post_comments_updated_at before update on public.post_comments for each row execute function public.set_updated_at();
 create trigger set_carts_updated_at before update on public.carts for each row execute function public.set_updated_at();
 create trigger set_cart_items_updated_at before update on public.cart_items for each row execute function public.set_updated_at();

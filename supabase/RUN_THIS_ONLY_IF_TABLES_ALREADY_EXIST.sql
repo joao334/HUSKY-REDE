@@ -52,7 +52,11 @@ alter table public.posts
 
 alter table public.stories
   add column if not exists media_type text default 'image' check (media_type in ('image', 'video')),
-  add column if not exists created_by uuid references auth.users(id) on delete set null;
+  add column if not exists created_by uuid references auth.users(id) on delete set null,
+  add column if not exists updated_at timestamp with time zone not null default now();
+
+drop trigger if exists set_stories_updated_at on public.stories;
+create trigger set_stories_updated_at before update on public.stories for each row execute function public.set_updated_at();
 
 create table if not exists public.post_saves (
   id uuid primary key default gen_random_uuid(),
@@ -163,3 +167,5 @@ using (bucket_id = 'husky-media');
 create policy "husky_media_authenticated_insert" on storage.objects
 for insert to authenticated
 with check (bucket_id = 'husky-media');
+
+notify pgrst, 'reload schema';
